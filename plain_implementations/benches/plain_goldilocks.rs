@@ -12,8 +12,18 @@ use zkhash::{
         POSEIDON2_GOLDILOCKS_16_PARAMS,
         POSEIDON2_GOLDILOCKS_20_PARAMS,
     }},
-    neptune::{neptune::Neptune, neptune_instances::NEPTUNE_GOLDILOCKS_PARAMS},
-    gmimc::{gmimc::Gmimc, gmimc_instance_goldilocks::GMIMC_GOLDILOCKS_PARAMS},
+    neptune::{neptune::Neptune, neptune_instances::{
+        NEPTUNE_GOLDILOCKS_8_PARAMS,
+        NEPTUNE_GOLDILOCKS_12_PARAMS,
+        NEPTUNE_GOLDILOCKS_16_PARAMS,
+        NEPTUNE_GOLDILOCKS_20_PARAMS,
+    }},
+    gmimc::{gmimc::Gmimc, gmimc_instance_goldilocks::{
+        GMIMC_GOLDILOCKS_8_PARAMS,
+        GMIMC_GOLDILOCKS_12_PARAMS,
+        GMIMC_GOLDILOCKS_16_PARAMS,
+        GMIMC_GOLDILOCKS_20_PARAMS,
+    }},
 };
 type Scalar = FpGoldiLocks;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -45,7 +55,7 @@ fn poseidon2_goldilocks(c: &mut Criterion) {
 }
 
 fn neptune_goldilocks(c: &mut Criterion) {
-    let neptune = Neptune::new(&NEPTUNE_GOLDILOCKS_PARAMS);
+    let neptune = Neptune::new(&NEPTUNE_GOLDILOCKS_12_PARAMS);
     let t = neptune.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 
@@ -58,7 +68,7 @@ fn neptune_goldilocks(c: &mut Criterion) {
 }
 
 fn gmimc_goldilocks(c: &mut Criterion) {
-    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_PARAMS);
+    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS);
     let t = gmimc.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 
@@ -71,7 +81,7 @@ fn gmimc_goldilocks(c: &mut Criterion) {
 }
 
 fn gmimc_opt_goldilocks(c: &mut Criterion) {
-    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_PARAMS);
+    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS);
     let t = gmimc.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 

@@ -2,7 +2,10 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use zkhash::{
     fields::{bls12::FpBLS12},
     merkle_tree::merkle_tree_fp::MerkleTree,
-    neptune::{neptune::Neptune, neptune_instances::NEPTUNE_BLS_PARAMS},
+    neptune::{neptune::Neptune, neptune_instances::{
+        NEPTUNE_BLS_4_PARAMS,
+        NEPTUNE_BLS_8_PARAMS,
+    }},
     poseidon::{poseidon::Poseidon, poseidon_instance_bls12::{
         POSEIDON_BLS_3_PARAMS,
         POSEIDON_BLS_4_PARAMS,
@@ -36,7 +39,7 @@ fn poseidon(c: &mut Criterion, log_set_size: usize) {
 }
 
 fn neptune(c: &mut Criterion, log_set_size: usize) {
-    let perm = Neptune::new(&NEPTUNE_BLS_PARAMS);
+    let perm = Neptune::new(&NEPTUNE_BLS_4_PARAMS);
     let mut mt = MerkleTree::new(perm);
     let set_size = 1 << log_set_size;
     let set: Vec<Scalar> = sample_set(set_size);

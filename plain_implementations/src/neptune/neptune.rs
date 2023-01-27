@@ -266,9 +266,10 @@ impl<S: PrimeField> MerkleTreeHash<S> for Neptune<S> {
 #[cfg(test)]
 mod neptune_tests_bls12 {
     use super::*;
-    use crate::{
-        fields::{bls12::FpBLS12, utils},
-        neptune::neptune_instances::NEPTUNE_BLS_PARAMS,
+    use crate::{fields::{bls12::FpBLS12, utils}};
+    use crate::neptune::neptune_instances::{
+        NEPTUNE_BLS_4_PARAMS,
+        NEPTUNE_BLS_8_PARAMS,
     };
     type Scalar = FpBLS12;
 
@@ -355,24 +356,29 @@ mod neptune_tests_bls12 {
 
     #[test]
     fn consistent_perm() {
-        let neptune = Neptune::new(&NEPTUNE_BLS_PARAMS);
-        let t = neptune.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
+        let instances = vec![
+            Neptune::new(&NEPTUNE_BLS_4_PARAMS),
+            Neptune::new(&NEPTUNE_BLS_8_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| utils::random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| utils::random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = neptune.permutation(&input1);
-            let perm2 = neptune.permutation(&input1);
-            let perm3 = neptune.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 }
@@ -494,9 +500,12 @@ mod neptune_tests_bn256 {
 #[cfg(test)]
 mod neptune_tests_goldilocks {
     use super::*;
-    use crate::{
-        fields::{goldilocks::FpGoldiLocks, utils},
-        neptune::neptune_instances::NEPTUNE_GOLDILOCKS_PARAMS,
+    use crate::{fields::{goldilocks::FpGoldiLocks, utils}};
+    use crate::neptune::neptune_instances::{
+        NEPTUNE_GOLDILOCKS_8_PARAMS,
+        NEPTUNE_GOLDILOCKS_12_PARAMS,
+        NEPTUNE_GOLDILOCKS_16_PARAMS,
+        NEPTUNE_GOLDILOCKS_20_PARAMS,
     };
     type Scalar = FpGoldiLocks;
 
@@ -583,24 +592,31 @@ mod neptune_tests_goldilocks {
 
     #[test]
     fn consistent_perm() {
-        let neptune = Neptune::new(&NEPTUNE_GOLDILOCKS_PARAMS);
-        let t = neptune.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
+        let instances = vec![
+            Neptune::new(&NEPTUNE_GOLDILOCKS_8_PARAMS),
+            Neptune::new(&NEPTUNE_GOLDILOCKS_12_PARAMS),
+            Neptune::new(&NEPTUNE_GOLDILOCKS_16_PARAMS),
+            Neptune::new(&NEPTUNE_GOLDILOCKS_20_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| utils::random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| utils::random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = neptune.permutation(&input1);
-            let perm2 = neptune.permutation(&input1);
-            let perm3 = neptune.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 }
