@@ -30,18 +30,13 @@ impl<F: PrimeField> Poseidon2Params<F> {
         mat_internal_diag_m_1: &[F],
         mat_internal: &[Vec<F>],
         round_constants: &[Vec<F>],
-        opt_round_constants: &[Vec<F>],
     ) -> Self {
         assert!(d == 3 || d == 5 || d == 7 || d == 11);
         assert_eq!(rounds_f % 2, 0);
         let r = rounds_f / 2;
         let rounds = rounds_f + rounds_p;
 
-        let mut opt_round_constants_ = opt_round_constants.to_owned();
-
-        if t == 3 || t == 12 || t == 24 {
-            opt_round_constants_ = Self::equivalent_round_constants(round_constants, mat_internal, r, rounds_p);
-        }
+        let opt_round_constants_ = Self::equivalent_round_constants(round_constants, mat_internal, r, rounds_p);
 
         Poseidon2Params {
             t,

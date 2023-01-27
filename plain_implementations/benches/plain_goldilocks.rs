@@ -6,7 +6,12 @@ use zkhash::{
         POSEIDON_GOLDILOCKS_16_PARAMS,
         POSEIDON_GOLDILOCKS_20_PARAMS,
     }},
-    poseidon2::{poseidon2::Poseidon2, poseidon2_instance_goldilocks::POSEIDON2_GOLDILOCKS_PARAMS},
+    poseidon2::{poseidon2::Poseidon2, poseidon2_instance_goldilocks::{
+        POSEIDON2_GOLDILOCKS_8_PARAMS,
+        POSEIDON2_GOLDILOCKS_12_PARAMS,
+        POSEIDON2_GOLDILOCKS_16_PARAMS,
+        POSEIDON2_GOLDILOCKS_20_PARAMS,
+    }},
     neptune::{neptune::Neptune, neptune_instances::NEPTUNE_GOLDILOCKS_PARAMS},
     gmimc::{gmimc::Gmimc, gmimc_instance_goldilocks::GMIMC_GOLDILOCKS_PARAMS},
 };
@@ -27,7 +32,7 @@ fn poseidon_goldilocks(c: &mut Criterion) {
 }
 
 fn poseidon2_goldilocks(c: &mut Criterion) {
-    let poseidon2 = Poseidon2::new(&POSEIDON2_GOLDILOCKS_PARAMS);
+    let poseidon2 = Poseidon2::new(&POSEIDON2_GOLDILOCKS_12_PARAMS);
     let t = poseidon2.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 

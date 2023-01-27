@@ -8,6 +8,11 @@ use zkhash::{
         POSEIDON_BLS_4_PARAMS,
         POSEIDON_BLS_8_PARAMS
     }},
+    poseidon2::{poseidon2::Poseidon2, poseidon2_instance_bls12::{
+        POSEIDON2_BLS_3_PARAMS,
+        POSEIDON2_BLS_4_PARAMS,
+        POSEIDON2_BLS_8_PARAMS
+    }},
 };
 type Scalar = FpBLS12;
 

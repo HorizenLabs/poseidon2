@@ -1366,5 +1366,5 @@ lazy_static! {
     ],
     ];
     
-    pub static ref POSEIDON2_BABYBEAR_PARAMS: Arc<Poseidon2Params<Scalar>> = Arc::new(Poseidon2Params::new(24, 7, 8, 21, &MAT_DIAG24_M_1, &MAT_INTERNAL24, &RC24, &RC24));
+    pub static ref POSEIDON2_BABYBEAR_PARAMS: Arc<Poseidon2Params<Scalar>> = Arc::new(Poseidon2Params::new(24, 7, 8, 21, &MAT_DIAG24_M_1, &MAT_INTERNAL24, &RC24));
     }

@@ -5,7 +5,11 @@ use zkhash::{
         POSEIDON_PALLAS_4_PARAMS,
         POSEIDON_PALLAS_8_PARAMS
     }},
-    poseidon2::{poseidon2::Poseidon2, poseidon2_instance_pallas::POSEIDON2_PALLAS_PARAMS},
+    poseidon2::{poseidon2::Poseidon2, poseidon2_instance_pallas::{
+        POSEIDON2_PALLAS_3_PARAMS,
+        POSEIDON2_PALLAS_4_PARAMS,
+        POSEIDON2_PALLAS_8_PARAMS
+    }},
     gmimc::{gmimc::Gmimc, gmimc_instance_pallas::GMIMC_PALLAS_3_PARAMS},
 };
 type Scalar = FpPallas;
@@ -25,7 +29,7 @@ fn poseidon_pallas(c: &mut Criterion) {
 }
 
 fn poseidon2_pallas(c: &mut Criterion) {
-    let poseidon2 = Poseidon2::new(&POSEIDON2_PALLAS_PARAMS);
+    let poseidon2 = Poseidon2::new(&POSEIDON2_PALLAS_3_PARAMS);
     let t = poseidon2.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 
