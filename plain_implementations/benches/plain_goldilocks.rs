@@ -28,82 +28,112 @@ use zkhash::{
 type Scalar = FpGoldiLocks;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-fn poseidon_goldilocks(c: &mut Criterion) {
-    let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_8_PARAMS);
-    let t = poseidon.get_t();
-    let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
-
-    c.bench_function("Poseidon Goldilocks plain (t = 12)", move |bench| {
-        bench.iter(|| {
-            let perm = poseidon.permutation(black_box(&input));
-            black_box(perm)
+fn poseidon(c: &mut Criterion) {
+    let instances = vec![
+        Poseidon::new(&POSEIDON_GOLDILOCKS_8_PARAMS),
+        Poseidon::new(&POSEIDON_GOLDILOCKS_12_PARAMS),
+        Poseidon::new(&POSEIDON_GOLDILOCKS_16_PARAMS),
+        Poseidon::new(&POSEIDON_GOLDILOCKS_20_PARAMS),
+    ];
+    for instance in instances {
+        let t = instance.get_t();
+        let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
+        c.bench_function(format!("Poseidon Goldilocks plain (t = {})", t).as_str(), move |bench| {
+            bench.iter(|| {
+                let perm = instance.permutation(black_box(&input));
+                black_box(perm)
+            });
         });
-    });
+    }
 }
 
-fn poseidon2_goldilocks(c: &mut Criterion) {
-    let poseidon2 = Poseidon2::new(&POSEIDON2_GOLDILOCKS_12_PARAMS);
-    let t = poseidon2.get_t();
-    let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
-
-    c.bench_function("Poseidon2 Goldilocks plain (t = 12)", move |bench| {
-        bench.iter(|| {
-            let perm = poseidon2.permutation(black_box(&input));
-            black_box(perm)
+fn poseidon2(c: &mut Criterion) {
+    let instances = vec![
+        Poseidon2::new(&POSEIDON2_GOLDILOCKS_8_PARAMS),
+        Poseidon2::new(&POSEIDON2_GOLDILOCKS_12_PARAMS),
+        Poseidon2::new(&POSEIDON2_GOLDILOCKS_16_PARAMS),
+        Poseidon2::new(&POSEIDON2_GOLDILOCKS_20_PARAMS),
+    ];
+    for instance in instances {
+        let t = instance.get_t();
+        let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
+        c.bench_function(format!("Poseidon2 Goldilocks plain (t = {})", t).as_str(), move |bench| {
+            bench.iter(|| {
+                let perm = instance.permutation(black_box(&input));
+                black_box(perm)
+            });
         });
-    });
+    }
 }
 
-fn neptune_goldilocks(c: &mut Criterion) {
-    let neptune = Neptune::new(&NEPTUNE_GOLDILOCKS_12_PARAMS);
-    let t = neptune.get_t();
-    let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
-
-    c.bench_function("Neptune Goldilocks plain (t = 12)", move |bench| {
-        bench.iter(|| {
-            let perm = neptune.permutation(black_box(&input));
-            black_box(perm)
+fn neptune(c: &mut Criterion) {
+    let instances = vec![
+        Neptune::new(&NEPTUNE_GOLDILOCKS_8_PARAMS),
+        Neptune::new(&NEPTUNE_GOLDILOCKS_12_PARAMS),
+        Neptune::new(&NEPTUNE_GOLDILOCKS_16_PARAMS),
+        Neptune::new(&NEPTUNE_GOLDILOCKS_20_PARAMS),
+    ];
+    for instance in instances {
+        let t = instance.get_t();
+        let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
+        c.bench_function(format!("Neptune Goldilocks plain (t = {})", t).as_str(), move |bench| {
+            bench.iter(|| {
+                let perm = instance.permutation(black_box(&input));
+                black_box(perm)
+            });
         });
-    });
+    }
 }
 
-fn gmimc_goldilocks(c: &mut Criterion) {
-    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS);
-    let t = gmimc.get_t();
-    let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
-
-    c.bench_function("GMiMC Goldilocks plain (t = 12)", move |bench| {
-        bench.iter(|| {
-            let perm = gmimc.permutation_not_opt(black_box(&input));
-            black_box(perm)
+fn gmimc(c: &mut Criterion) {
+    let instances = vec![
+        Gmimc::new(&GMIMC_GOLDILOCKS_8_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_16_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_20_PARAMS),
+    ];
+    for instance in instances {
+        let t = instance.get_t();
+        let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
+        c.bench_function(format!("GMiMC Goldilocks plain (t = {})", t).as_str(), move |bench| {
+            bench.iter(|| {
+                let perm = instance.permutation_not_opt(black_box(&input));
+                black_box(perm)
+            });
         });
-    });
+    }
 }
 
-fn gmimc_opt_goldilocks(c: &mut Criterion) {
-    let gmimc = Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS);
-    let t = gmimc.get_t();
-    let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
-
-    c.bench_function("GMiMC (opt) Goldilocks plain (t = 12)", move |bench| {
-        bench.iter(|| {
-            let perm = gmimc.permutation(black_box(&input));
-            black_box(perm)
+fn gmimc_opt(c: &mut Criterion) {
+    let instances = vec![
+        Gmimc::new(&GMIMC_GOLDILOCKS_8_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_12_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_16_PARAMS),
+        Gmimc::new(&GMIMC_GOLDILOCKS_20_PARAMS),
+    ];
+    for instance in instances {
+        let t = instance.get_t();
+        let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
+        c.bench_function(format!("GMiMC (opt) Goldilocks plain (t = {})", t).as_str(), move |bench| {
+            bench.iter(|| {
+                let perm = instance.permutation(black_box(&input));
+                black_box(perm)
+            });
         });
-    });
+    }
 }
 
-fn criterion_benchmark_plain_goldilocks(c: &mut Criterion) {
-    poseidon_goldilocks(c);
-    poseidon2_goldilocks(c);
-    neptune_goldilocks(c);
-    gmimc_goldilocks(c);
-    gmimc_opt_goldilocks(c);
+fn criterion_benchmark_plain(c: &mut Criterion) {
+    poseidon(c);
+    poseidon2(c);
+    neptune(c);
+    gmimc(c);
+    gmimc_opt(c);
 }
 
 criterion_group!(
     name = benches;
     config = Criterion::default();
-    targets = criterion_benchmark_plain_goldilocks
+    targets = criterion_benchmark_plain
 );
 criterion_main!(benches);

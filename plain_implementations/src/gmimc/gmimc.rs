@@ -1,3 +1,5 @@
+use crate::merkle_tree::merkle_tree_fp::MerkleTreeHash;
+
 use std::sync::Arc;
 
 use ark_ff::PrimeField;
@@ -108,6 +110,12 @@ impl<S: PrimeField> Gmimc<S> {
         self.round(&mut current_state, self.params.rounds - 1);
 
         current_state
+    }
+}
+
+impl<F: PrimeField> MerkleTreeHash<F> for Gmimc<F> {
+    fn compress(&self, input: &[&F]) -> F {
+        self.permutation(&[input[0].to_owned(), input[1].to_owned(), F::zero()])[0]
     }
 }
 

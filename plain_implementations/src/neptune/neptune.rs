@@ -253,7 +253,7 @@ impl<S: PrimeField> Neptune<S> {
 }
 
 impl<S: PrimeField> MerkleTreeHash<S> for Neptune<S> {
-    fn compress(&self, input: &[&S; 2]) -> S {
+    fn compress(&self, input: &[&S]) -> S {
         self.permutation(&[
             input[0].to_owned(),
             input[1].to_owned(),

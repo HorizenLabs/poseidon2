@@ -2,7 +2,7 @@ use ark_ff::PrimeField;
 use std::marker::PhantomData;
 
 pub trait MerkleTreeHash<F: PrimeField> {
-    fn compress(&self, input: &[&F; 2]) -> F;
+    fn compress(&self, input: &[&F]) -> F;
 }
 
 #[derive(Clone, Debug)]

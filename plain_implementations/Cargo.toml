@@ -56,6 +56,10 @@ name = "plain_bn256"
 harness = false
 
 [[bench]]
+name = "plain_bls12"
+harness = false
+
+[[bench]]
 name = "plain_pallas"
 harness = false
 

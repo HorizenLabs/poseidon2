@@ -158,7 +158,7 @@ impl<S: PrimeField> Poseidon<S> {
 }
 
 impl<F: PrimeField> MerkleTreeHash<F> for Poseidon<F> {
-    fn compress(&self, input: &[&F; 2]) -> F {
+    fn compress(&self, input: &[&F]) -> F {
         self.permutation(&[input[0].to_owned(), input[1].to_owned(), F::zero()])[0]
     }
 }

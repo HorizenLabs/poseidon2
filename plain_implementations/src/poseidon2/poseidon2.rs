@@ -233,7 +233,7 @@ impl<F: PrimeField> Poseidon2<F> {
 }
 
 impl<F: PrimeField> MerkleTreeHash<F> for Poseidon2<F> {
-    fn compress(&self, input: &[&F; 2]) -> F {
+    fn compress(&self, input: &[&F]) -> F {
         self.permutation(&[input[0].to_owned(), input[1].to_owned(), F::zero()])[0]
     }
 }
