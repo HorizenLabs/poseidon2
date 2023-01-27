@@ -167,7 +167,11 @@ impl<F: PrimeField> MerkleTreeHash<F> for Poseidon<F> {
 mod poseidon_tests_bls12 {
     use super::*;
     use crate::fields::{bls12::FpBLS12, utils::from_hex, utils::random_scalar};
-    use crate::poseidon::poseidon_instance_bls12::POSEIDON_BLS_PARAMS;
+    use crate::poseidon::poseidon_instance_bls12::{
+        POSEIDON_BLS_3_PARAMS,
+        POSEIDON_BLS_4_PARAMS,
+        POSEIDON_BLS_8_PARAMS,
+    };
 
     type Scalar = FpBLS12;
 
@@ -175,30 +179,36 @@ mod poseidon_tests_bls12 {
 
     #[test]
     fn consistent_perm() {
-        let poseidon = Poseidon::new(&POSEIDON_BLS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_BLS_3_PARAMS),
+            Poseidon::new(&POSEIDON_BLS_4_PARAMS),
+            Poseidon::new(&POSEIDON_BLS_8_PARAMS)
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = poseidon.permutation(&input1);
-            let perm2 = poseidon.permutation(&input1);
-            let perm3 = poseidon.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 
     #[test]
     fn kats() {
-        let poseidon = Poseidon::new(&POSEIDON_BLS_PARAMS);
+        let poseidon = Poseidon::new(&POSEIDON_BLS_3_PARAMS);
         let input: Vec<Scalar> = vec![Scalar::from(0), Scalar::from(1), Scalar::from(2)];
         let perm = poseidon.permutation(&input);
         assert_eq!(
@@ -216,14 +226,20 @@ mod poseidon_tests_bls12 {
     }
     #[test]
     fn opt_equals_not_opt() {
-        let poseidon = Poseidon::new(&POSEIDON_BLS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_BLS_3_PARAMS),
+            Poseidon::new(&POSEIDON_BLS_4_PARAMS),
+            Poseidon::new(&POSEIDON_BLS_8_PARAMS)
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let perm1 = poseidon.permutation(&input);
-            let perm2 = poseidon.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
+                let perm1 = instance.permutation(&input);
+                let perm2 = instance.permutation_not_opt(&input);
+                assert_eq!(perm1, perm2);
+            }
         }
     }
 }
@@ -298,7 +314,12 @@ mod poseidon_tests_bn256 {
 mod poseidon_tests_goldilocks {
     use super::*;
     use crate::fields::{goldilocks::FpGoldiLocks, utils::from_hex, utils::random_scalar};
-    use crate::poseidon::poseidon_instance_goldilocks::POSEIDON_GOLDILOCKS_PARAMS;
+    use crate::poseidon::poseidon_instance_goldilocks::{
+        POSEIDON_GOLDILOCKS_8_PARAMS,
+        POSEIDON_GOLDILOCKS_12_PARAMS,
+        POSEIDON_GOLDILOCKS_16_PARAMS,
+        POSEIDON_GOLDILOCKS_20_PARAMS,
+    };
     use std::convert::TryFrom;
 
     type Scalar = FpGoldiLocks;
@@ -308,30 +329,37 @@ mod poseidon_tests_goldilocks {
 
     #[test]
     fn consistent_perm() {
-        let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_GOLDILOCKS_8_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_12_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_16_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_20_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = poseidon.permutation(&input1);
-            let perm2 = poseidon.permutation(&input1);
-            let perm3 = poseidon.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 
     #[test]
     fn kats() {
-        let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_PARAMS);
+        let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_12_PARAMS);
         // let input: Vec<Scalar> = vec![Scalar::zero(), Scalar::one(), utils::from_u64::<Scalar>(2)];
         let mut input: Vec<Scalar> = vec![];
         for i in 0..poseidon.params.t {
@@ -390,14 +418,21 @@ mod poseidon_tests_goldilocks {
 
     #[test]
     fn opt_equals_not_opt() {
-        let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_GOLDILOCKS_8_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_12_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_16_PARAMS),
+            Poseidon::new(&POSEIDON_GOLDILOCKS_20_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let perm1 = poseidon.permutation(&input);
-            let perm2 = poseidon.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
+                let perm1 = instance.permutation(&input);
+                let perm2 = instance.permutation_not_opt(&input);
+                assert_eq!(perm1, perm2);
+            }
         }
     }
 }
@@ -456,7 +491,12 @@ mod poseidon_tests_babybear {
 mod poseidon_tests_pallas {
     use super::*;
     use crate::fields::{pallas::FpPallas, utils::from_hex, utils::random_scalar};
-    use crate::poseidon::poseidon_instance_pallas::POSEIDON_PALLAS_PARAMS;
+    use crate::poseidon::poseidon_instance_pallas::{
+        POSEIDON_PALLAS_3_PARAMS,
+        POSEIDON_PALLAS_4_PARAMS,
+        POSEIDON_PALLAS_8_PARAMS,
+    };
+
 
     type Scalar = FpPallas;
     use ark_ff::UniformRand;
@@ -465,30 +505,36 @@ mod poseidon_tests_pallas {
 
     #[test]
     fn consistent_perm() {
-        let poseidon = Poseidon::new(&POSEIDON_PALLAS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_PALLAS_3_PARAMS),
+            Poseidon::new(&POSEIDON_PALLAS_4_PARAMS),
+            Poseidon::new(&POSEIDON_PALLAS_8_PARAMS)
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = poseidon.permutation(&input1);
-            let perm2 = poseidon.permutation(&input1);
-            let perm3 = poseidon.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 
     #[test]
     fn kats() {
-        let poseidon = Poseidon::new(&POSEIDON_PALLAS_PARAMS);
+        let poseidon = Poseidon::new(&POSEIDON_PALLAS_3_PARAMS);
         let input: Vec<Scalar> = vec![Scalar::from(0), Scalar::from(1), Scalar::from(2)];
         let perm = poseidon.permutation(&input);
         assert_eq!(
@@ -507,14 +553,20 @@ mod poseidon_tests_pallas {
 
     #[test]
     fn opt_equals_not_opt() {
-        let poseidon = Poseidon::new(&POSEIDON_PALLAS_PARAMS);
-        let t = poseidon.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Poseidon::new(&POSEIDON_PALLAS_3_PARAMS),
+            Poseidon::new(&POSEIDON_PALLAS_4_PARAMS),
+            Poseidon::new(&POSEIDON_PALLAS_8_PARAMS)
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let perm1 = poseidon.permutation(&input);
-            let perm2 = poseidon.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
+                let perm1 = instance.permutation(&input);
+                let perm2 = instance.permutation_not_opt(&input);
+                assert_eq!(perm1, perm2);
+            }
         }
     }
 }

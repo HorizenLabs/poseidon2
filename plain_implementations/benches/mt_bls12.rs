@@ -3,7 +3,11 @@ use zkhash::{
     fields::{bls12::FpBLS12},
     merkle_tree::merkle_tree_fp::MerkleTree,
     neptune::{neptune::Neptune, neptune_instances::NEPTUNE_BLS_PARAMS},
-    poseidon::{poseidon::Poseidon, poseidon_instance_bls12::POSEIDON_BLS_PARAMS},
+    poseidon::{poseidon::Poseidon, poseidon_instance_bls12::{
+        POSEIDON_BLS_3_PARAMS,
+        POSEIDON_BLS_4_PARAMS,
+        POSEIDON_BLS_8_PARAMS
+    }},
 };
 type Scalar = FpBLS12;
 
@@ -12,7 +16,7 @@ fn sample_set(set_size: usize) -> Vec<Scalar> {
 }
 
 fn poseidon(c: &mut Criterion, log_set_size: usize) {
-    let perm = Poseidon::new(&POSEIDON_BLS_PARAMS);
+    let perm = Poseidon::new(&POSEIDON_BLS_3_PARAMS);
     let mut mt = MerkleTree::new(perm);
     let set_size = 1 << log_set_size;
     let set: Vec<Scalar> = sample_set(set_size);

@@ -1,6 +1,11 @@
 use zkhash::{
     fields::{goldilocks::FpGoldiLocks},
-    poseidon::{poseidon::Poseidon, poseidon_instance_goldilocks::POSEIDON_GOLDILOCKS_PARAMS},
+    poseidon::{poseidon::Poseidon, poseidon_instance_goldilocks::{
+        POSEIDON_GOLDILOCKS_8_PARAMS,
+        POSEIDON_GOLDILOCKS_12_PARAMS,
+        POSEIDON_GOLDILOCKS_16_PARAMS,
+        POSEIDON_GOLDILOCKS_20_PARAMS,
+    }},
     poseidon2::{poseidon2::Poseidon2, poseidon2_instance_goldilocks::POSEIDON2_GOLDILOCKS_PARAMS},
     neptune::{neptune::Neptune, neptune_instances::NEPTUNE_GOLDILOCKS_PARAMS},
     gmimc::{gmimc::Gmimc, gmimc_instance_goldilocks::GMIMC_GOLDILOCKS_PARAMS},
@@ -9,7 +14,7 @@ type Scalar = FpGoldiLocks;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn poseidon_goldilocks(c: &mut Criterion) {
-    let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_PARAMS);
+    let poseidon = Poseidon::new(&POSEIDON_GOLDILOCKS_8_PARAMS);
     let t = poseidon.get_t();
     let input: Vec<Scalar> = (0..t).map(|i| Scalar::from(i as u64)).collect();
 

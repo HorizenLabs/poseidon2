@@ -28,10 +28,6 @@ impl<S: PrimeField> PoseidonParams<S> {
         rounds_p: usize,
         mds: &[Vec<S>],
         round_constants: &[Vec<S>],
-        opt_round_constants: &[Vec<S>],
-        w_hat: &[Vec<S>],
-        v: &[Vec<S>],
-        m_i: &[Vec<S>],
     ) -> Self {
         assert!(d == 3 || d == 5 || d == 7);
         assert_eq!(mds.len(), t);
@@ -39,15 +35,8 @@ impl<S: PrimeField> PoseidonParams<S> {
         let r = rounds_f / 2;
         let rounds = rounds_f + rounds_p;
 
-        let mut opt_round_constants_ = opt_round_constants.to_owned();
-        let mut w_hat_ = w_hat.to_owned();
-        let mut v_ = v.to_owned();
-        let mut m_i_ = m_i.to_owned();
-
-        if t == 3 || t == 12 || t == 24 {
-            (m_i_, v_, w_hat_) = Self::equivalent_matrices(mds, t, rounds_p);
-            opt_round_constants_ = Self::equivalent_round_constants(round_constants, mds, r, rounds_p);
-        }
+        let (m_i_, v_, w_hat_) = Self::equivalent_matrices(mds, t, rounds_p);
+        let opt_round_constants_ = Self::equivalent_round_constants(round_constants, mds, r, rounds_p);
 
         PoseidonParams {
             t,

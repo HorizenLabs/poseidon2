@@ -286,6 +286,6 @@ lazy_static! {
         ],
     ];
     pub static ref POSEIDON_VESTA_PARAMS: Arc<PoseidonParams<Scalar>> = Arc::new(PoseidonParams::new(
-        3, 5, 8, 57, &MDS3, &RC3, &MDS3, &MDS3, &MDS3, &MDS3
+        3, 5, 8, 57, &MDS3, &RC3
     ));
 }

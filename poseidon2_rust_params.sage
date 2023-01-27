@@ -3,30 +3,6 @@ from sage.rings.polynomial.polynomial_gf2x import GF2X_BuildIrred_list
 from math import *
 import itertools
 
-# Note that R_P is increased to the closest multiple of t
-# GF(p), alpha=3, N = 1536, n = 64, t = 24, R_F = 8, R_P = 42: sage generate_parameters_grain.sage 1 0 64 24 8 42 0xfffffffffffffeff
-# GF(p), alpha=5, N = 1524, n = 254, t = 6, R_F = 8, R_P = 60: sage generate_parameters_grain.sage 1 0 254 6 8 60 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
-# GF(p), x^(-1), N = 1518, n = 253, t = 6, R_F = 8, R_P = 60: sage generate_parameters_grain.sage 1 1 253 6 8 60 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
-
-# GF(p), alpha=5, N = 765, n = 255, t = 3, R_F = 8, R_P = 57: sage generate_parameters_grain.sage 1 0 255 3 8 57 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
-# GF(p), alpha=5, N = 1275, n = 255, t = 5, R_F = 8, R_P = 60: sage generate_parameters_grain.sage 1 0 255 5 8 60 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
-# GF(p), alpha=5, N = 762, n = 254, t = 3, R_F = 8, R_P = 57: sage generate_parameters_grain.sage 1 0 254 3 8 57 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
-# GF(p), alpha=5, N = 1270, n = 254, t = 5, R_F = 8, R_P = 60: sage generate_parameters_grain.sage 1 0 254 5 8 60 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001
-
-# if len(sys.argv) < 7:
-#     print("Usage: <script> <field> <s_box> <field_size> <num_cells> <R_F> <R_P> (<prime_number_hex>)")
-#     print("field = 1 for GF(p)")
-#     print("s_box = 0 for x^alpha, s_box = 1 for x^(-1)")
-#     exit()
-
-# # Parameters
-# FIELD = int(sys.argv[1]) # 0 .. GF(2^n), 1 .. GF(p)
-# SBOX = int(sys.argv[2]) # 0 .. x^alpha, 1 .. x^(-1)
-# FIELD_SIZE = int(sys.argv[3]) # n
-# NUM_CELLS = int(sys.argv[4]) # t
-# R_F_FIXED = int(sys.argv[5])
-# R_P_FIXED = int(sys.argv[6])
-
 ###########################################################################
 p = 18446744069414584321 # GoldiLocks
 # p = 2013265921 # BabyBear
@@ -133,10 +109,10 @@ def sat_inequiv_alpha(p, t, R_F, R_P, alpha, M):
 R_F_FIXED, R_P_FIXED, _, _ = poseidon_calc_final_numbers_fixed(p, t, alpha, 128, True)
 print("+++ R_F = {0}, R_P = {1} +++".format(R_F_FIXED, R_P_FIXED))
 
-# # For STARK TODO
-# m3 = R_P_FIXED % 3
-# if m3 != 0:
-#     R_P_FIXED = R_P_FIXED + 3 - m3
+# For STARK TODO
+r_p_mod = R_P_FIXED % NUM_CELLS
+if r_p_mod != 0:
+    R_P_FIXED = R_P_FIXED + NUM_CELLS - r_p_mod
 
 ###########################################################################
 
@@ -617,30 +593,6 @@ round_constants = generate_constants(FIELD, FIELD_SIZE, NUM_CELLS, R_F_FIXED, R_
 MATRIX_FULL = generate_matrix_full(NUM_CELLS)
 MATRIX_PARTIAL = generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS)
 MATRIX_PARTIAL_DIAGONAL_M_1 = [matrix_partial_m_1(MATRIX_PARTIAL, NUM_CELLS)[i,i] for i in range(0, NUM_CELLS)]
-
-# Temp for testing
-# state_in  = vector([F(i) for i in range(t)])
-# state_out = poseidon2(state_in, MATRIX_FULL, MATRIX_PARTIAL, round_constants)
-# exit()
-
-# def to_scalar(value):
-#     value = int(value)
-#     print("Scalar::from_bytes(&[", end = "")
-#     for i in range(32):
-#         val = value & 0xFF
-#         value = value >> 8
-#         print("{}, ".format(val), end="")
-#     print("]).unwrap(), ", end ="")
-
-# def to_u64(value):
-#     value = int(value)
-#     s = "["
-#     for i in range(4):
-#         val = value & 0xFFFFFFFFFFFFFFFF
-#         value = value >> 64
-#         s = s + "{}, ".format(hex(val))
-#     s = s + "]"
-#     return s
 
 def to_hex(value):
     l = len(hex(p - 1))
