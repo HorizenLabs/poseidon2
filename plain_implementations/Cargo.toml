@@ -33,7 +33,7 @@ criterion = "0.4"
 
 [features]
 default = []
-asm = ["sha2/asm", "blake2/simd_asm"]
+asm = ["sha2/asm", "blake2/simd_asm", "ark-ff/asm"]
 
 [[bench]]
 name = "mt_bls12"
