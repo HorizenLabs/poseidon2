@@ -6,7 +6,7 @@ import itertools
 ###########################################################################
 p = 18446744069414584321 # GoldiLocks
 # p = 2013265921 # BabyBear
-# p = 52435875175126190479447740508185965837690552500527637822603658699938581184513 # BLS381
+# p = 52435875175126190479447740508185965837690552500527637822603658699938581184513 # BLS12-381
 # p = 21888242871839275222246405745257275088548364400416034343698204186575808495617 # BN254/BN256
 # p = 28948022309329048855892746252171976963363056481941560715954676764349967630337 # Pasta (Pallas)
 # p = 28948022309329048855892746252171976963363056481941647379679742748393362948097 # Pasta (Vesta)
@@ -14,7 +14,7 @@ p = 18446744069414584321 # GoldiLocks
 n = len(p.bits()) # bit
 t = 12 # GoldiLocks (t = 12 for sponge, t = 8 for compression)
 # t = 24 # BabyBear (t = 24 for sponge, t = 16 for compression)
-# t = 3 # BN254/BN256, BLS381, Pallas, Vesta (t = 3 for sponge, t = 2 for compression)
+# t = 3 # BN254/BN256, BLS12-381, Pallas, Vesta (t = 3 for sponge, t = 2 for compression)
 
 FIELD = 1
 SBOX = 1
@@ -110,9 +110,9 @@ R_F_FIXED, R_P_FIXED, _, _ = poseidon_calc_final_numbers_fixed(p, t, alpha, 128,
 print("+++ R_F = {0}, R_P = {1} +++".format(R_F_FIXED, R_P_FIXED))
 
 # For STARK TODO
-r_p_mod = R_P_FIXED % NUM_CELLS
-if r_p_mod != 0:
-    R_P_FIXED = R_P_FIXED + NUM_CELLS - r_p_mod
+# r_p_mod = R_P_FIXED % NUM_CELLS
+# if r_p_mod != 0:
+#     R_P_FIXED = R_P_FIXED + NUM_CELLS - r_p_mod
 
 ###########################################################################
 
@@ -375,6 +375,17 @@ def algorithm_3(M, NUM_CELLS):
 
     return [True, None]
 
+def check_minpoly_condition(M, NUM_CELLS):
+    max_period = 2*NUM_CELLS
+    all_fulfilled = True
+    M_temp = M
+    for i in range(1, max_period + 1):
+        if not ((M_temp.minimal_polynomial().degree() == NUM_CELLS) and (M_temp.minimal_polynomial().is_irreducible() == True)):
+            all_fulfilled = False
+            break
+        M_temp = M * M_temp
+    return all_fulfilled
+
 def generate_matrix(FIELD, FIELD_SIZE, NUM_CELLS):
     if FIELD == 0:
         print("Matrix generation not implemented for GF(2^n).")
@@ -419,19 +430,28 @@ def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize s
         exit(1)
     elif FIELD == 1:
         M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
-        # combinations = list(itertools.product(range(2, 4), repeat=NUM_CELLS))
-        # for entry in combinations:
-        #     M = M_circulant + matrix.diagonal(vector(F, list(entry)))
-        #     if M.is_invertible() == False or algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
-        #         continue
-        #     return M
-        # Matrix with "small" entries not found, continue with random matrix search
         M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
         M = M_circulant + M_diagonal
-        while algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
+        # while algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
+        while check_minpoly_condition(M, NUM_CELLS) == False:
             M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
             M = M_circulant + M_diagonal
         return M
+
+def generate_matrix_partial_small_entries(FIELD, FIELD_SIZE, NUM_CELLS):
+    if FIELD == 0:
+        print("Matrix generation not implemented for GF(2^n).")
+        exit(1)
+    elif FIELD == 1:
+        M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
+        combinations = list(itertools.product(range(2, 6), repeat=NUM_CELLS))
+        for entry in combinations:
+            M = M_circulant + matrix.diagonal(vector(F, list(entry)))
+            print(M)
+            # if M.is_invertible() == False or algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
+            if M.is_invertible() == False or check_minpoly_condition(M, NUM_CELLS) == False:
+                continue
+            return M
 
 def matrix_partial_m_1(matrix_partial, NUM_CELLS):
     M_circulant = matrix.identity(F, NUM_CELLS)

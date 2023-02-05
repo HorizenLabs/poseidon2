@@ -20,7 +20,8 @@ lazy_static! {
     pub static ref NEPTUNE_GOLDILOCKS_16_PARAMS: Arc<NeptuneParams<FpGoldiLocks>> = Arc::new(NeptuneParams::new(16, 7, 6, 48));
     pub static ref NEPTUNE_GOLDILOCKS_20_PARAMS: Arc<NeptuneParams<FpGoldiLocks>> = Arc::new(NeptuneParams::new(20, 7, 6, 52));
     // BabyBear
-    pub static ref NEPTUNE_BABYBEAR_PARAMS: Arc<NeptuneParams<FpBabyBear>> = Arc::new(NeptuneParams::new(24, 7, 6, 43));
+    pub static ref NEPTUNE_BABYBEAR_16_PARAMS: Arc<NeptuneParams<FpBabyBear>> = Arc::new(NeptuneParams::new(16, 7, 6, 34));
+    pub static ref NEPTUNE_BABYBEAR_24_PARAMS: Arc<NeptuneParams<FpBabyBear>> = Arc::new(NeptuneParams::new(24, 7, 6, 43));
     // Pallas
     pub static ref NEPTUNE_PALLAS_4_PARAMS: Arc<NeptuneParams<FpPallas>> = Arc::new(NeptuneParams::new(4, 5, 6, 69));
     pub static ref NEPTUNE_PALLAS_8_PARAMS: Arc<NeptuneParams<FpPallas>> = Arc::new(NeptuneParams::new(8, 5, 6, 74));

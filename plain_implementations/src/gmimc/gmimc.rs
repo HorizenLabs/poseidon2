@@ -282,7 +282,8 @@ mod gmimc_tests_goldilocks {
 #[cfg(test)]
 mod gmimc_tests_babybear {
     use super::*;
-    use crate::gmimc::gmimc_instance_babybear::GMIMC_BABYBEAR_PARAMS;
+    use crate::gmimc::gmimc_instance_babybear::GMIMC_BABYBEAR_16_PARAMS;
+    use crate::gmimc::gmimc_instance_babybear::GMIMC_BABYBEAR_24_PARAMS;
     use crate::fields::{babybear::FpBabyBear, utils::random_scalar};
 
     type Scalar = FpBabyBear;
@@ -291,37 +292,47 @@ mod gmimc_tests_babybear {
 
     #[test]
     fn consistent_perm() {
-        let gmimc = Gmimc::new(&GMIMC_BABYBEAR_PARAMS);
-        let t = gmimc.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Gmimc::new(&GMIMC_BABYBEAR_16_PARAMS),
+            Gmimc::new(&GMIMC_BABYBEAR_24_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = gmimc.permutation(&input1);
-            let perm2 = gmimc.permutation(&input1);
-            let perm3 = gmimc.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 
     #[test]
     fn opt_equals_not_opt() {
-        let gmimc = Gmimc::new(&GMIMC_BABYBEAR_PARAMS);
-        let t = gmimc.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
+        let instances = vec![
+            Gmimc::new(&GMIMC_BABYBEAR_16_PARAMS),
+            Gmimc::new(&GMIMC_BABYBEAR_24_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
 
-            let perm1 = gmimc.permutation(&input);
-            let perm2 = gmimc.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
+                let perm1 = instance.permutation(&input);
+                let perm2 = instance.permutation_not_opt(&input);
+                assert_eq!(perm1, perm2);
+            }
         }
     }
 }

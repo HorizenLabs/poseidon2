@@ -626,7 +626,8 @@ mod neptune_tests_babybear {
     use super::*;
     use crate::{
         fields::{babybear::FpBabyBear, utils},
-        neptune::neptune_instances::NEPTUNE_BABYBEAR_PARAMS,
+        neptune::neptune_instances::NEPTUNE_BABYBEAR_16_PARAMS,
+        neptune::neptune_instances::NEPTUNE_BABYBEAR_24_PARAMS,
     };
     type Scalar = FpBabyBear;
 
@@ -713,24 +714,29 @@ mod neptune_tests_babybear {
 
     #[test]
     fn consistent_perm() {
-        let neptune = Neptune::new(&NEPTUNE_BABYBEAR_PARAMS);
-        let t = neptune.params.t;
-        for _ in 0..TESTRUNS {
-            let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
+        let instances = vec![
+            Neptune::new(&NEPTUNE_BABYBEAR_16_PARAMS),
+            Neptune::new(&NEPTUNE_BABYBEAR_24_PARAMS),
+        ];
+        for instance in instances {
+            let t = instance.params.t;
+            for _ in 0..TESTRUNS {
+                let input1: Vec<Scalar> = (0..t).map(|_| utils::random_scalar()).collect();
 
-            let mut input2: Vec<Scalar>;
-            loop {
-                input2 = (0..t).map(|_| utils::random_scalar()).collect();
-                if input1 != input2 {
-                    break;
+                let mut input2: Vec<Scalar>;
+                loop {
+                    input2 = (0..t).map(|_| utils::random_scalar()).collect();
+                    if input1 != input2 {
+                        break;
+                    }
                 }
-            }
 
-            let perm1 = neptune.permutation(&input1);
-            let perm2 = neptune.permutation(&input1);
-            let perm3 = neptune.permutation(&input2);
-            assert_eq!(perm1, perm2);
-            assert_ne!(perm1, perm3);
+                let perm1 = instance.permutation(&input1);
+                let perm2 = instance.permutation(&input1);
+                let perm3 = instance.permutation(&input2);
+                assert_eq!(perm1, perm2);
+                assert_ne!(perm1, perm3);
+            }
         }
     }
 }
