@@ -35,43 +35,12 @@ impl<F: PrimeField> Poseidon2<F> {
         }
 
         let p_end = self.params.rounds_f_beginning + self.params.rounds_p;
-        current_state = self.add_rc(&current_state, &self.params.opt_round_constants[0]);
-        for r in 1..(self.params.rounds_p + 1) {
+        for r in self.params.rounds_f_beginning..p_end {
+            current_state[0].add_assign(&self.params.round_constants[r][0]);
             current_state[0] = self.sbox_p(&current_state[0]);
-            current_state[0].add_assign(&self.params.opt_round_constants[r][0]);
             self.matmul_internal(&mut current_state, &self.params.mat_internal_diag_m_1);
         }
         
-        for r in p_end..self.params.rounds {
-            current_state = self.add_rc(&current_state, &self.params.round_constants[r]);
-            current_state = self.sbox(&current_state);
-            self.matmul_external(&mut current_state);
-        }
-        current_state
-    }
-
-    pub fn permutation_not_opt(&self, input: &[F]) -> Vec<F> {
-        let t = self.params.t;
-        assert_eq!(input.len(), t);
-
-        let mut current_state = input.to_owned();
-
-        // Linear layer at beginning
-        self.matmul_external(&mut current_state);
-
-        for r in 0..self.params.rounds_f_beginning {
-            current_state = self.add_rc(&current_state, &self.params.round_constants[r]);
-            current_state = self.sbox(&current_state);
-            self.matmul_external(&mut current_state);
-        }
-
-        let p_end = self.params.rounds_f_beginning + self.params.rounds_p;
-        for r in self.params.rounds_f_beginning..p_end {
-            current_state = self.add_rc(&current_state, &self.params.round_constants[r]);
-            current_state[0] = self.sbox_p(&current_state[0]);
-            self.matmul_internal(&mut current_state, &self.params.mat_internal_diag_m_1);
-        }
-
         for r in p_end..self.params.rounds {
             current_state = self.add_rc(&current_state, &self.params.round_constants[r]);
             current_state = self.sbox(&current_state);
@@ -293,39 +262,19 @@ mod poseidon2_tests_goldilocks {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x12a0e34a20879ec7"));
-        assert_eq!(perm[1], from_hex("0xdff531b65bcd2770"));
-        assert_eq!(perm[2], from_hex("0xacfde64ace0bb075"));
-        assert_eq!(perm[3], from_hex("0x0d9044b55d697e2c"));
-        assert_eq!(perm[4], from_hex("0x3afffd14aeaab03d"));
-        assert_eq!(perm[5], from_hex("0x49f51fc35517972a"));
-        assert_eq!(perm[6], from_hex("0x74da7d0508892cc7"));
-        assert_eq!(perm[7], from_hex("0x04cdca75b5646fe2"));
-        assert_eq!(perm[8], from_hex("0xb110bcea2fe730c1"));
-        assert_eq!(perm[9], from_hex("0x9558a7f7af657d1e"));
-        assert_eq!(perm[10], from_hex("0x9751e0cb1ee16c17"));
-        assert_eq!(perm[11], from_hex("0xd2574bee1659fee7"));
+        assert_eq!(perm[0], from_hex("0xed3dbcc4ff1e8d33"));
+        assert_eq!(perm[1], from_hex("0xfb85eac6ac91a150"));
+        assert_eq!(perm[2], from_hex("0xd41e1e237ed3e2ef"));
+        assert_eq!(perm[3], from_hex("0x5e289bf0a4c11897"));
+        assert_eq!(perm[4], from_hex("0x4398b20f93e3ba6b"));
+        assert_eq!(perm[5], from_hex("0x5659a48ffaf2901d"));
+        assert_eq!(perm[6], from_hex("0xe44d81e89a88f8ae"));
+        assert_eq!(perm[7], from_hex("0x08efdb285f8c3dbc"));
+        assert_eq!(perm[8], from_hex("0x294ab7503297850e"));
+        assert_eq!(perm[9], from_hex("0xa11c61f4870b9904"));
+        assert_eq!(perm[10], from_hex("0xa6855c112cc08968"));
+        assert_eq!(perm[11], from_hex("0x17c6d53d2fb3e8c1"));
 
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let instances = vec![
-            Poseidon2::new(&POSEIDON2_GOLDILOCKS_8_PARAMS),
-            Poseidon2::new(&POSEIDON2_GOLDILOCKS_12_PARAMS),
-            Poseidon2::new(&POSEIDON2_GOLDILOCKS_16_PARAMS),
-            Poseidon2::new(&POSEIDON2_GOLDILOCKS_20_PARAMS),
-        ];
-        for instance in instances {
-            let t = instance.params.t;
-            for _ in 0..TESTRUNS {
-                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-                let perm1 = instance.permutation(&input);
-                let perm2 = instance.permutation_not_opt(&input);
-                assert_eq!(perm1, perm2);
-            }
-        }
     }
 }
 
@@ -380,49 +329,31 @@ mod poseidon2_tests_babybear {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x2ec08c0d"));
-        assert_eq!(perm[1], from_hex("0x5fe607c5"));
-        assert_eq!(perm[2], from_hex("0x10ab945e"));
-        assert_eq!(perm[3], from_hex("0x1b8973cc"));
-        assert_eq!(perm[4], from_hex("0x15870998"));
-        assert_eq!(perm[5], from_hex("0x66fce31d"));
-        assert_eq!(perm[6], from_hex("0x3f38ea43"));
-        assert_eq!(perm[7], from_hex("0x6b9c3705"));
-        assert_eq!(perm[8], from_hex("0x02f07a0b"));
-        assert_eq!(perm[9], from_hex("0x4b052f69"));
-        assert_eq!(perm[10], from_hex("0x65bfca0d"));
-        assert_eq!(perm[11], from_hex("0x3a4baba8"));
-        assert_eq!(perm[12], from_hex("0x71d9b602"));
-        assert_eq!(perm[13], from_hex("0x46335095"));
-        assert_eq!(perm[14], from_hex("0x0c68c3c2"));
-        assert_eq!(perm[15], from_hex("0x4133626e"));
-        assert_eq!(perm[16], from_hex("0x109e0b39"));
-        assert_eq!(perm[17], from_hex("0x452ae1e0"));
-        assert_eq!(perm[18], from_hex("0x6d63b8f5"));
-        assert_eq!(perm[19], from_hex("0x1f2fc257"));
-        assert_eq!(perm[20], from_hex("0x12894b7d"));
-        assert_eq!(perm[21], from_hex("0x4a03d9b8"));
-        assert_eq!(perm[22], from_hex("0x653f5994"));
-        assert_eq!(perm[23], from_hex("0x1ba2f443"));
+        assert_eq!(perm[0], from_hex("0x7264c7b4"));
+        assert_eq!(perm[1], from_hex("0x57f54b89"));
+        assert_eq!(perm[2], from_hex("0x08e94bc9"));
+        assert_eq!(perm[3], from_hex("0x4b05f544"));
+        assert_eq!(perm[4], from_hex("0x68e1ccac"));
+        assert_eq!(perm[5], from_hex("0x5aff4a53"));
+        assert_eq!(perm[6], from_hex("0x685c3665"));
+        assert_eq!(perm[7], from_hex("0x58b53bb8"));
+        assert_eq!(perm[8], from_hex("0x0bdc0a03"));
+        assert_eq!(perm[9], from_hex("0x0376e981"));
+        assert_eq!(perm[10], from_hex("0x498926e6"));
+        assert_eq!(perm[11], from_hex("0x3185cef3"));
+        assert_eq!(perm[12], from_hex("0x17778434"));
+        assert_eq!(perm[13], from_hex("0x551bbf78"));
+        assert_eq!(perm[14], from_hex("0x46e0df61"));
+        assert_eq!(perm[15], from_hex("0x04222917"));
+        assert_eq!(perm[16], from_hex("0x09b8d147"));
+        assert_eq!(perm[17], from_hex("0x6e0192ce"));
+        assert_eq!(perm[18], from_hex("0x25215927"));
+        assert_eq!(perm[19], from_hex("0x06b43026"));
+        assert_eq!(perm[20], from_hex("0x093b34f3"));
+        assert_eq!(perm[21], from_hex("0x6ed57a4c"));
+        assert_eq!(perm[22], from_hex("0x73a7c7a3"));
+        assert_eq!(perm[23], from_hex("0x511e49f5"));
 
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let instances = vec![
-            Poseidon2::new(&POSEIDON2_BABYBEAR_16_PARAMS),
-            Poseidon2::new(&POSEIDON2_BABYBEAR_24_PARAMS)
-        ];
-        for instance in instances {
-            let t = instance.params.t;
-            for _ in 0..TESTRUNS {
-                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-                let perm1 = instance.permutation(&input);
-                let perm2 = instance.permutation_not_opt(&input);
-                assert_eq!(perm1, perm2);
-            }
-        }
     }
 }
 
@@ -479,28 +410,9 @@ mod poseidon2_tests_bls12 {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x0c07cd926a6b1cdc4671b5063f1d958fd9ed157ce0afc5a3a07296bd44a03f71"));
-        assert_eq!(perm[1], from_hex("0x719a8dfa8df976c1cd0d02e30eb7ba48eabbef2d94c0ea3a864238466812a314"));
-        assert_eq!(perm[2], from_hex("0x052937bf500adbb26dc1a5ae50b37cbd3bbb7c9863be8976506199dd5179d6da"));
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let instances = vec![
-            Poseidon2::new(&POSEIDON2_BLS_3_PARAMS),
-            Poseidon2::new(&POSEIDON2_BLS_4_PARAMS),
-            Poseidon2::new(&POSEIDON2_BLS_8_PARAMS)
-        ];
-        for instance in instances {
-            let t = instance.params.t;
-            for _ in 0..TESTRUNS {
-                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-                let perm1 = instance.permutation(&input);
-                let perm2 = instance.permutation_not_opt(&input);
-                assert_eq!(perm1, perm2);
-            }
-        }
+        assert_eq!(perm[0], from_hex("0x562af4b3710cdba6cea53e1f73325b21bb97ac810943b74d863d87163ee8042e"));
+        assert_eq!(perm[1], from_hex("0x4674eba4cef166510c0d7a9ddf08cf813637bc2081e2c40c5047dce7ecdf2b95"));
+        assert_eq!(perm[2], from_hex("0x0cf55ec35287dca6195eb6dd43e9ac1aba8857b4d3e4501be8bd8e9946a8dc54"));
     }
 }
 
@@ -546,23 +458,10 @@ mod poseidon2_tests_bn256 {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x12df045f8784b551534ecbfb3d039c6840577a508f67fcdf2624c77f189f828b"));
-        assert_eq!(perm[1], from_hex("0x209b2c3f875fff41ed81576b77089a2cfa30d3c840ac66307cb7cd9292a5018f"));
-        assert_eq!(perm[2], from_hex("0x16414ee2d17ef3598e807b2a5b732d25f2b1fc821126b21fce447b2ee0fc0d0c"));
+        assert_eq!(perm[0], from_hex("0x30610a447b7dec194697fb50786aa7421494bd64c221ba4d3b1af25fb07bd103"));
+        assert_eq!(perm[1], from_hex("0x13f731d6ffbad391be22d2ac364151849e19fa38eced4e761bcd21dbdc600288"));
+        assert_eq!(perm[2], from_hex("0x1433e2c8f68382c447c5c14b8b3df7cbfd9273dd655fe52f1357c27150da786f"));
 
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let poseidon2 = Poseidon2::new(&POSEIDON2_BN256_PARAMS);
-        let t = poseidon2.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-            let perm1 = poseidon2.permutation(&input);
-            let perm2 = poseidon2.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
-        }
     }
 }
 
@@ -619,29 +518,10 @@ mod poseidon2_tests_pallas {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x0db342985726e25dd266eed3e5acb59ac009d9489ee2b3dff31425378ff8c207"));
-        assert_eq!(perm[1], from_hex("0x2faba4e66cc58fc3ac1a35d1575b71188eaf53b297ae96edbc88257f73250690"));
-        assert_eq!(perm[2], from_hex("0x1a002ed5e9e105dc7614a5220c6b98e33a83e494aeeae51c89c68222523f8772"));
+        assert_eq!(perm[0], from_hex("0x1d6a0158834521fd53c786debb6456171b462f2ee3beb243bba0fa87e2fe7024"));
+        assert_eq!(perm[1], from_hex("0x1d5caec6db09d78608971fd010944e5d81c036012031db1ae6f79b6886eff724"));
+        assert_eq!(perm[2], from_hex("0x1622fe4b0dccd5e5393a31ba40e15c3e5a93a83dbe416f5e3d44f86998ce4878"));
 
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let instances = vec![
-            Poseidon2::new(&POSEIDON2_PALLAS_3_PARAMS),
-            Poseidon2::new(&POSEIDON2_PALLAS_4_PARAMS),
-            Poseidon2::new(&POSEIDON2_PALLAS_8_PARAMS)
-        ];
-        for instance in instances {
-            let t = instance.params.t;
-            for _ in 0..TESTRUNS {
-                let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-                let perm1 = instance.permutation(&input);
-                let perm2 = instance.permutation_not_opt(&input);
-                assert_eq!(perm1, perm2);
-            }
-        }
     }
 }
 
@@ -687,22 +567,9 @@ mod poseidon2_tests_vesta {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x1d440fc641aac892570b84e71acf7c5318dd644fee0e422da954035fdf23a41d"));
-        assert_eq!(perm[1], from_hex("0x2fa30f04971aafde79157ab0e08a817407d420a991c43a375945f0530db32ef5"));
-        assert_eq!(perm[2], from_hex("0x2ec7abde6fc2af15997f510e0995d0c39c9136099509b392bc3de44052349cc4"));
+        assert_eq!(perm[0], from_hex("0x2dbc40552a2b2a785f63489278361134609229297aafcde2bc8958d45546966f"));
+        assert_eq!(perm[1], from_hex("0x373efbf666c89d0653612fadf73ab1db47df46c38e86a959d642801a7c4b0201"));
+        assert_eq!(perm[2], from_hex("0x09cde65715aa5d7a6a5bc5feedd549489f805de1c7951e2135b8135ef1112f59"));
 
-    }
-
-    #[test]
-    fn opt_equals_not_opt() {
-        let poseidon2 = Poseidon2::new(&POSEIDON2_VESTA_PARAMS);
-        let t = poseidon2.params.t;
-        for _ in 0..TESTRUNS {
-            let input: Vec<Scalar> = (0..t).map(|_| random_scalar()).collect();
-
-            let perm1 = poseidon2.permutation(&input);
-            let perm2 = poseidon2.permutation_not_opt(&input);
-            assert_eq!(perm1, perm2);
-        }
     }
 }

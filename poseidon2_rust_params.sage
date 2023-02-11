@@ -4,17 +4,17 @@ from math import *
 import itertools
 
 ###########################################################################
-p = 18446744069414584321 # GoldiLocks
+# p = 18446744069414584321 # GoldiLocks
 # p = 2013265921 # BabyBear
-# p = 52435875175126190479447740508185965837690552500527637822603658699938581184513 # BLS12-381
+p = 52435875175126190479447740508185965837690552500527637822603658699938581184513 # BLS12-381
 # p = 21888242871839275222246405745257275088548364400416034343698204186575808495617 # BN254/BN256
 # p = 28948022309329048855892746252171976963363056481941560715954676764349967630337 # Pasta (Pallas)
 # p = 28948022309329048855892746252171976963363056481941647379679742748393362948097 # Pasta (Vesta)
 
 n = len(p.bits()) # bit
-t = 12 # GoldiLocks (t = 12 for sponge, t = 8 for compression)
-# t = 24 # BabyBear (t = 24 for sponge, t = 16 for compression)
-# t = 3 # BN254/BN256, BLS12-381, Pallas, Vesta (t = 3 for sponge, t = 2 for compression)
+# t = 12 # GoldiLocks (t = 12 for sponge, t = 8 for compression)
+# t = 16 # BabyBear (t = 24 for sponge, t = 16 for compression)
+t = 3 # BN254/BN256, BLS12-381, Pallas, Vesta (t = 3 for sponge, t = 2 for compression)
 
 FIELD = 1
 SBOX = 1
@@ -172,7 +172,8 @@ def init_generator(field, sbox, n, t, R_F, R_P):
 
 def generate_constants(field, n, t, R_F, R_P, prime_number):
     round_constants = []
-    num_constants = (R_F + R_P) * t
+    # num_constants = (R_F + R_P) * t # Poseidon
+    num_constants = (R_F * t) + R_P # Poseidon2
 
     if field == 0:
         for i in range(0, num_constants):
@@ -185,6 +186,9 @@ def generate_constants(field, n, t, R_F, R_P, prime_number):
                 # print("[Info] Round constant is not in prime field! Taking next one.")
                 random_int = grain_random_bits(n)
             round_constants.append(random_int)
+            # Add (t-1) zeroes for Poseidon2 if partial round
+            if i >= ((R_F/2) * t) and i < (((R_F/2) * t) + R_P):
+                round_constants.extend([0] * (t-1))
     return round_constants
 
 def print_round_constants(round_constants, n, field):
@@ -429,14 +433,17 @@ def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize s
         print("Matrix generation not implemented for GF(2^n).")
         exit(1)
     elif FIELD == 1:
-        M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
-        M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
-        M = M_circulant + M_diagonal
-        # while algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
-        while check_minpoly_condition(M, NUM_CELLS) == False:
+        if t == 3:
+            return matrix(F, [[F(2), F(1), F(1)], [F(1), F(2), F(1)], [F(1), F(1), F(3)]])
+        else:
+            M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
             M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
             M = M_circulant + M_diagonal
-        return M
+            # while algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
+            while check_minpoly_condition(M, NUM_CELLS) == False:
+                M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
+                M = M_circulant + M_diagonal
+            return M
 
 def generate_matrix_partial_small_entries(FIELD, FIELD_SIZE, NUM_CELLS):
     if FIELD == 0:

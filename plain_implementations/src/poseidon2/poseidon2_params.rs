@@ -14,7 +14,6 @@ pub struct Poseidon2Params<F: PrimeField> {
     pub(crate) mat_internal_diag_m_1: Vec<F>,
     pub(crate) _mat_internal: Vec<Vec<F>>,
     pub(crate) round_constants: Vec<Vec<F>>,
-    pub(crate) opt_round_constants: Vec<Vec<F>>, // optimized
 }
 
 impl<F: PrimeField> Poseidon2Params<F> {
@@ -36,8 +35,6 @@ impl<F: PrimeField> Poseidon2Params<F> {
         let r = rounds_f / 2;
         let rounds = rounds_f + rounds_p;
 
-        let opt_round_constants_ = Self::equivalent_round_constants(round_constants, mat_internal, r, rounds_p);
-
         Poseidon2Params {
             t,
             d,
@@ -48,10 +45,10 @@ impl<F: PrimeField> Poseidon2Params<F> {
             mat_internal_diag_m_1: mat_internal_diag_m_1.to_owned(),
             _mat_internal: mat_internal.to_owned(),
             round_constants: round_constants.to_owned(),
-            opt_round_constants: opt_round_constants_,
         }
     }
 
+    // Unused
     pub fn equivalent_round_constants(
         round_constants: &[Vec<F>],
         mat_internal: &[Vec<F>],

@@ -213,15 +213,15 @@ mod poseidon_tests_bls12 {
         let perm = poseidon.permutation(&input);
         assert_eq!(
             perm[0],
-            from_hex("0x22a1f1595d99e4a04fc0a5b16be51a844a7cb5b5d69627ebbd1ee8142e7532ce")
+            from_hex("0x200e6982ac00df8fa65cef1fde9f21373fdbbfd98f2df1eb5fa04f3302ab0397")
         );
         assert_eq!(
             perm[1],
-            from_hex("0x5f7ae6d6c380c90510de9c045ee75163eae24054ba8cd88d254cd1c343f43176")
+            from_hex("0x2233c9a40d91c1f643b700f836a1ac231c3f3a8d438ad1609355e1b7317a47e5")
         );
         assert_eq!(
             perm[2],
-            from_hex("0x1b7e4da7d1ac6accb2e0470a83ba87d7bb585f4ba8c9a34f936faf3b3dfc695b")
+            from_hex("0x2eae6736db3c086ad29938869dedbf969dd9804a58aa228ec467b7d5a08dc765")
         );
     }
     #[test]
@@ -284,15 +284,15 @@ mod poseidon_tests_bn256 {
         let perm = poseidon.permutation(&input);
         assert_eq!(
             perm[0],
-            from_hex("0x2e72c60509a284872f62830b58ed8524a58c362dd3ddb98b2767f36b566596bd")
+            from_hex("0x2677d68d9cfa91f197bf5148b50afac461b6b8340ff119a5217794770baade5f")
         );
         assert_eq!(
             perm[1],
-            from_hex("0x180a812301272545f79ae1012b0425162a1833ac39101e070732f4d8a8bc4718")
+            from_hex("0x21ae9d716173496b62c76ad7deb4654961f64334441bcf77e17a047155a3239f")
         );
         assert_eq!(
             perm[2],
-            from_hex("0x1828343d70eed99aae404e3ea58209f45743f3d54983fe250ce1526a9d8cf88e")
+            from_hex("0x008f8e7c73ff20b6a141c48cef73215860acc749b14f0a7887f74950215169c6")
         );
     }
     #[test]
@@ -552,15 +552,15 @@ mod poseidon_tests_pallas {
         let perm = poseidon.permutation(&input);
         assert_eq!(
             perm[0],
-            from_hex("0x05d05891ddea8307b31c867776064d69da60aad0d14e99eee943c94282c30526")
+            from_hex("0x08fd69dd1602112194d1fefd8c2b20242e371879feba6683a4bdeebd6e8f121c")
         );
         assert_eq!(
             perm[1],
-            from_hex("0x077a24130de1934e6f6cdbae982cc71615ddafce084fd06500336376d5d35796")
+            from_hex("0x2a17023cc2483bf305661df2580c3b29444f8b954de7f2166091592ba7728591")
         );
         assert_eq!(
             perm[2],
-            from_hex("0x1f6c3401c4f3fb94f1821e9ddaad8e173ed6c11ed4fb8bcf792f97ed8107e4ec")
+            from_hex("0x1495649c6632dd6202315e468aa08b1392b750dfe0d2b3bbc902e230355e9615")
         );
     }
 
@@ -626,15 +626,15 @@ mod poseidon_tests_vesta {
         let perm = poseidon.permutation(&input);
         assert_eq!(
             perm[0],
-            from_hex("0x27a8d19d5d875f59e2439822e5f4ee80f2d113a522cab5d589e3cca52f66f868")
+            from_hex("0x32e8b71fc2963b1c2371a5a9e191671079b3e059d9683027b146bd5d34cea133")
         );
         assert_eq!(
             perm[1],
-            from_hex("0x33186d9b217a7ff8e125439b8ac8b3188870343d06db1691dec0215cc188e1de")
+            from_hex("0x005e6cd1461b0470c03f045e8fba078846bbdbb0992c37fc6f4764ebdb92a1d6")
         );
         assert_eq!(
             perm[2],
-            from_hex("0x1a4a058ffbfef2006edbd773a1f731d200be5ab8d631dfdc158f603b845caf91")
+            from_hex("0x162f4406f334d8600c569b3172e75abf00f6c201871d4fff9834cedd0c8aa5d3")
         );
     }
 
