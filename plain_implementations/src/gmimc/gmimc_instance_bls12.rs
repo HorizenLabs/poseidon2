@@ -9,6 +9,8 @@ type Scalar = FpBLS12;
 lazy_static! {
     // Number of rounds:
     // max(2 + 2 * (t + t^2), ceil(2 * log_d(p)) + 2 * t)
+    pub static ref GMIMC_BLS_2_PARAMS: Arc<GmimcParams<Scalar>> =
+        Arc::new(GmimcParams::new(2, 5, 224));
     pub static ref GMIMC_BLS_3_PARAMS: Arc<GmimcParams<Scalar>> =
         Arc::new(GmimcParams::new(3, 5, 226));
     pub static ref GMIMC_BLS_4_PARAMS: Arc<GmimcParams<Scalar>> =

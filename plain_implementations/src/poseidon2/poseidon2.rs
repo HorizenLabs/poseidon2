@@ -84,13 +84,14 @@ impl<F: PrimeField> Poseidon2<F> {
 
     fn matmul_external(&self, input: &mut[F]) {
         let t = self.params.t;
-        // let divisible_four = if t % 4 == 0 {
-        //     true
-        // } else {
-        //     false
-        // };
-
         match t {
+            2 => {
+                // Matrix circ(2, 1)
+                let mut sum = input[0];
+                sum.add_assign(&input[1]);
+                input[0].add_assign(&sum);
+                input[1].add_assign(&sum);
+            }
             3 => {
                 // Matrix circ(2, 1, 1)
                 let mut sum = input[0];
@@ -156,6 +157,15 @@ impl<F: PrimeField> Poseidon2<F> {
         let t = self.params.t;
 
         match t {
+            2 => {
+                // [2, 1]
+                // [1, 3]
+                let mut sum = input[0];
+                sum.add_assign(&input[1]);
+                input[0].add_assign(&sum);
+                input[1].double_in_place();
+                input[1].add_assign(&sum);
+            }
             3 => {
                 // [2, 1, 1]
                 // [1, 2, 1]
@@ -363,6 +373,7 @@ mod poseidon2_tests_bls12 {
     use super::*;
     use crate::{fields::{bls12::FpBLS12, utils::from_hex, utils::random_scalar}};
     use crate::poseidon2::poseidon2_instance_bls12::{
+        POSEIDON2_BLS_2_PARAMS,
         POSEIDON2_BLS_3_PARAMS,
         POSEIDON2_BLS_4_PARAMS,
         POSEIDON2_BLS_8_PARAMS,
@@ -376,6 +387,7 @@ mod poseidon2_tests_bls12 {
     #[test]
     fn consistent_perm() {
         let instances = vec![
+            Poseidon2::new(&POSEIDON2_BLS_2_PARAMS),
             Poseidon2::new(&POSEIDON2_BLS_3_PARAMS),
             Poseidon2::new(&POSEIDON2_BLS_4_PARAMS),
             Poseidon2::new(&POSEIDON2_BLS_8_PARAMS)
@@ -404,15 +416,24 @@ mod poseidon2_tests_bls12 {
 
     #[test]
     fn kats() {
-        let poseidon2 = Poseidon2::new(&POSEIDON2_BLS_3_PARAMS);
-        let mut input: Vec<Scalar> = vec![];
-        for i in 0..poseidon2.params.t {
-            input.push(Scalar::from(i as u64));
+        let poseidon2_2 = Poseidon2::new(&POSEIDON2_BLS_2_PARAMS);
+        let mut input_2: Vec<Scalar> = vec![];
+        for i in 0..poseidon2_2.params.t {
+            input_2.push(Scalar::from(i as u64));
         }
-        let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x562af4b3710cdba6cea53e1f73325b21bb97ac810943b74d863d87163ee8042e"));
-        assert_eq!(perm[1], from_hex("0x4674eba4cef166510c0d7a9ddf08cf813637bc2081e2c40c5047dce7ecdf2b95"));
-        assert_eq!(perm[2], from_hex("0x0cf55ec35287dca6195eb6dd43e9ac1aba8857b4d3e4501be8bd8e9946a8dc54"));
+        let perm_2 = poseidon2_2.permutation(&input_2);
+        assert_eq!(perm_2[0], from_hex("0x50f38c87fbf14be6e91d0d911b52dc8c1b19fe439348c427514a8b59bdf92f62"));
+        assert_eq!(perm_2[1], from_hex("0x3222c2d9d80f8be5aff518685e66ae4648cc76243d1ca077101bebb2ee245d30"));
+
+        let poseidon2_3 = Poseidon2::new(&POSEIDON2_BLS_3_PARAMS);
+        let mut input_3: Vec<Scalar> = vec![];
+        for i in 0..poseidon2_3.params.t {
+            input_3.push(Scalar::from(i as u64));
+        }
+        let perm_3 = poseidon2_3.permutation(&input_3);
+        assert_eq!(perm_3[0], from_hex("0x562af4b3710cdba6cea53e1f73325b21bb97ac810943b74d863d87163ee8042e"));
+        assert_eq!(perm_3[1], from_hex("0x4674eba4cef166510c0d7a9ddf08cf813637bc2081e2c40c5047dce7ecdf2b95"));
+        assert_eq!(perm_3[2], from_hex("0x0cf55ec35287dca6195eb6dd43e9ac1aba8857b4d3e4501be8bd8e9946a8dc54"));
     }
 }
 

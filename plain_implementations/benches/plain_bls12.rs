@@ -5,16 +5,19 @@ use zkhash::{
         NEPTUNE_BLS_8_PARAMS,
     }},
     gmimc::{gmimc::Gmimc, gmimc_instance_bls12::{
+        GMIMC_BLS_2_PARAMS,
         GMIMC_BLS_3_PARAMS,
         GMIMC_BLS_4_PARAMS,
         GMIMC_BLS_8_PARAMS,
     }},
     poseidon::{poseidon::Poseidon, poseidon_instance_bls12::{
+        POSEIDON_BLS_2_PARAMS,
         POSEIDON_BLS_3_PARAMS,
         POSEIDON_BLS_4_PARAMS,
         POSEIDON_BLS_8_PARAMS,
     }},
     poseidon2::{poseidon2::Poseidon2, poseidon2_instance_bls12::{
+        POSEIDON2_BLS_2_PARAMS,
         POSEIDON2_BLS_3_PARAMS,
         POSEIDON2_BLS_4_PARAMS,
         POSEIDON2_BLS_8_PARAMS,
@@ -25,6 +28,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn poseidon(c: &mut Criterion) {
     let instances = vec![
+        Poseidon::new(&POSEIDON_BLS_2_PARAMS),
         Poseidon::new(&POSEIDON_BLS_3_PARAMS),
         Poseidon::new(&POSEIDON_BLS_4_PARAMS),
         Poseidon::new(&POSEIDON_BLS_8_PARAMS)
@@ -43,6 +47,7 @@ fn poseidon(c: &mut Criterion) {
 
 fn poseidon2(c: &mut Criterion) {
     let instances = vec![
+        Poseidon2::new(&POSEIDON2_BLS_2_PARAMS),
         Poseidon2::new(&POSEIDON2_BLS_3_PARAMS),
         Poseidon2::new(&POSEIDON2_BLS_4_PARAMS),
         Poseidon2::new(&POSEIDON2_BLS_8_PARAMS)
@@ -62,6 +67,7 @@ fn poseidon2(c: &mut Criterion) {
 
 fn gmimc(c: &mut Criterion) {
     let instances = vec![
+        Gmimc::new(&GMIMC_BLS_2_PARAMS),
         Gmimc::new(&GMIMC_BLS_3_PARAMS),
         Gmimc::new(&GMIMC_BLS_4_PARAMS),
         Gmimc::new(&GMIMC_BLS_8_PARAMS)
@@ -81,6 +87,7 @@ fn gmimc(c: &mut Criterion) {
 
 fn gmimc_opt(c: &mut Criterion) {
     let instances = vec![
+        Gmimc::new(&GMIMC_BLS_2_PARAMS),
         Gmimc::new(&GMIMC_BLS_3_PARAMS),
         Gmimc::new(&GMIMC_BLS_4_PARAMS),
         Gmimc::new(&GMIMC_BLS_8_PARAMS)

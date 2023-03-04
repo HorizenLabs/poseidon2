@@ -168,6 +168,7 @@ mod poseidon_tests_bls12 {
     use super::*;
     use crate::fields::{bls12::FpBLS12, utils::from_hex, utils::random_scalar};
     use crate::poseidon::poseidon_instance_bls12::{
+        POSEIDON_BLS_2_PARAMS,
         POSEIDON_BLS_3_PARAMS,
         POSEIDON_BLS_4_PARAMS,
         POSEIDON_BLS_8_PARAMS,
@@ -180,6 +181,7 @@ mod poseidon_tests_bls12 {
     #[test]
     fn consistent_perm() {
         let instances = vec![
+            Poseidon::new(&POSEIDON_BLS_2_PARAMS),
             Poseidon::new(&POSEIDON_BLS_3_PARAMS),
             Poseidon::new(&POSEIDON_BLS_4_PARAMS),
             Poseidon::new(&POSEIDON_BLS_8_PARAMS)
@@ -208,25 +210,38 @@ mod poseidon_tests_bls12 {
 
     #[test]
     fn kats() {
-        let poseidon = Poseidon::new(&POSEIDON_BLS_3_PARAMS);
-        let input: Vec<Scalar> = vec![Scalar::from(0), Scalar::from(1), Scalar::from(2)];
-        let perm = poseidon.permutation(&input);
+        let poseidon_2 = Poseidon::new(&POSEIDON_BLS_2_PARAMS);
+        let input_2: Vec<Scalar> = vec![Scalar::from(0), Scalar::from(1),];
+        let perm_2 = poseidon_2.permutation(&input_2);
         assert_eq!(
-            perm[0],
+            perm_2[0],
+            from_hex("0x1dc37ce34aeee058292bb73bff9acffce73a8a92f3d6d1daa8b77d9516b5c837")
+        );
+        assert_eq!(
+            perm_2[1],
+            from_hex("0x534cc8001b9c21da25d62749e136ea3d702651ba129f0d5ed7847cf81bc8b042")
+        );
+
+        let poseidon_3 = Poseidon::new(&POSEIDON_BLS_3_PARAMS);
+        let input_3: Vec<Scalar> = vec![Scalar::from(0), Scalar::from(1), Scalar::from(2)];
+        let perm_3 = poseidon_3.permutation(&input_3);
+        assert_eq!(
+            perm_3[0],
             from_hex("0x200e6982ac00df8fa65cef1fde9f21373fdbbfd98f2df1eb5fa04f3302ab0397")
         );
         assert_eq!(
-            perm[1],
+            perm_3[1],
             from_hex("0x2233c9a40d91c1f643b700f836a1ac231c3f3a8d438ad1609355e1b7317a47e5")
         );
         assert_eq!(
-            perm[2],
+            perm_3[2],
             from_hex("0x2eae6736db3c086ad29938869dedbf969dd9804a58aa228ec467b7d5a08dc765")
         );
     }
     #[test]
     fn opt_equals_not_opt() {
         let instances = vec![
+            Poseidon::new(&POSEIDON_BLS_2_PARAMS),
             Poseidon::new(&POSEIDON_BLS_3_PARAMS),
             Poseidon::new(&POSEIDON_BLS_4_PARAMS),
             Poseidon::new(&POSEIDON_BLS_8_PARAMS)

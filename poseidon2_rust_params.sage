@@ -87,21 +87,11 @@ def sat_inequiv_alpha(p, t, R_F, R_P, alpha, M):
     if alpha > 0:
         R_F_1 = 6 if M <= ((floor(log(p, 2) - ((alpha-1)/2.0))) * (t + 1)) else 10 # Statistical
         R_F_2 = 1 + ceil(log(2, alpha) * min(M, n)) + ceil(log(t, alpha)) - R_P # Interpolation
-        #R_F_3 = ceil(min(n, M) / float(3*log(alpha, 2))) - R_P # Groebner 1
-        #R_F_3 = ((log(2, alpha) / float(2)) * min(n, M)) - R_P # Groebner 1
-        R_F_3 = 1 + (log(2, alpha) * min(M/float(3), log(p, 2)/float(2))) - R_P # Groebner 1
-        R_F_4 = t - 1 + min((log(2, alpha) * M) / float(t+1), ((log(2, alpha)*log(p, 2)) / float(2))) - R_P # Groebner 2
-        #R_F_5 = ((1.0/(2*log((alpha**alpha)/float((alpha-1)**(alpha-1)), 2))) * min(n, M) + t - 2 - R_P) / float(t - 1) # Groebner 3
-        R_F_max = max(ceil(R_F_1), ceil(R_F_2), ceil(R_F_3), ceil(R_F_4))
+        R_F_3 = (log(2, alpha) * min(M, log(p, 2))) - R_P # Groebner 1
+        R_F_4 = t - 1 + log(2, alpha) * min(M / float(t + 1), log(p, 2) / float(2)) - R_P # Groebner 2
+        R_F_5 = (t - 2 + (M / float(2 * log(alpha, 2))) - R_P) / float(t - 1) # Groebner 3
+        R_F_max = max(ceil(R_F_1), ceil(R_F_2), ceil(R_F_3), ceil(R_F_4), ceil(R_F_5))
         return (R_F >= R_F_max)
-    elif alpha == (-1):
-        R_F_1 = 6 if M <= ((floor(log(p, 2) - 2)) * (t + 1)) else 10 # Statistical
-        R_P_1 = 1 + ceil(0.5 * min(M, n)) + ceil(log(t, 2)) - floor(R_F * log(t, 2)) # Interpolation
-        R_P_2 = 1 + ceil(0.5 * min(M, n)) + ceil(log(t, 2)) - floor(R_F * log(t, 2))
-        R_P_3 = t - 1 + ceil(log(t, 2)) + min(ceil(M / float(t+1)), ceil(0.5*log(p, 2))) - floor(R_F * log(t, 2)) # Groebner 2
-        R_F_max = ceil(R_F_1)
-        R_P_max = max(ceil(R_P_1), ceil(R_P_2), ceil(R_P_3))
-        return (R_F >= R_F_max and R_P >= R_P_max)
     else:
         print("Invalid value for alpha!")
         exit(1)
@@ -408,7 +398,9 @@ def generate_matrix(FIELD, FIELD_SIZE, NUM_CELLS):
 
 def generate_matrix_full(NUM_CELLS):
     M = None
-    if t == 3:
+    if t == 2:
+        M = matrix.circulant(vector([F(2), F(1)]))
+    elif t == 3:
         M = matrix.circulant(vector([F(2), F(1), F(1)]))
     elif t == 4:
         M = matrix(F, [[F(5), F(7), F(1), F(3)], [F(4), F(6), F(1), F(1)], [F(1), F(3), F(5), F(7)], [F(1), F(1), F(4), F(6)]])
@@ -433,8 +425,11 @@ def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize s
         print("Matrix generation not implemented for GF(2^n).")
         exit(1)
     elif FIELD == 1:
-        if t == 3:
-            return matrix(F, [[F(2), F(1), F(1)], [F(1), F(2), F(1)], [F(1), F(1), F(3)]])
+        M = None
+        if t == 2:
+            M = matrix(F, [[F(2), F(1)], [F(1), F(3)]])
+        elif t == 3:
+            M = matrix(F, [[F(2), F(1), F(1)], [F(1), F(2), F(1)], [F(1), F(1), F(3)]])
         else:
             M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
             M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
@@ -443,7 +438,11 @@ def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize s
             while check_minpoly_condition(M, NUM_CELLS) == False:
                 M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
                 M = M_circulant + M_diagonal
-            return M
+        
+        if(algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False):
+            print("Error: Generated partial matrix is not secure w.r.t. subspace trails.")
+            exit()
+        return M
 
 def generate_matrix_partial_small_entries(FIELD, FIELD_SIZE, NUM_CELLS):
     if FIELD == 0:
