@@ -82,16 +82,26 @@ def find_FD_round_numbers(p, t, alpha, M, cost_function, security_margin):
     return (int(R_F), int(R_P))
 
 def sat_inequiv_alpha(p, t, R_F, R_P, alpha, M):
-    n = ceil(log(p, 2))
-    N = int(n * t)
+    N = int(FIELD_SIZE * NUM_CELLS)
+    
     if alpha > 0:
         R_F_1 = 6 if M <= ((floor(log(p, 2) - ((alpha-1)/2.0))) * (t + 1)) else 10 # Statistical
-        R_F_2 = 1 + ceil(log(2, alpha) * min(M, n)) + ceil(log(t, alpha)) - R_P # Interpolation
+        R_F_2 = 1 + ceil(log(2, alpha) * min(M, FIELD_SIZE)) + ceil(log(t, alpha)) - R_P # Interpolation
         R_F_3 = (log(2, alpha) * min(M, log(p, 2))) - R_P # Groebner 1
         R_F_4 = t - 1 + log(2, alpha) * min(M / float(t + 1), log(p, 2) / float(2)) - R_P # Groebner 2
         R_F_5 = (t - 2 + (M / float(2 * log(alpha, 2))) - R_P) / float(t - 1) # Groebner 3
         R_F_max = max(ceil(R_F_1), ceil(R_F_2), ceil(R_F_3), ceil(R_F_4), ceil(R_F_5))
-        return (R_F >= R_F_max)
+        
+        # Addition due to https://eprint.iacr.org/2023/537.pdf
+        r_temp = floor(t / 3.0)
+        over = (R_F - 1) * t + R_P + r_temp + r_temp * (R_F / 2.0) + R_P + alpha
+        under = r_temp * (R_F / 2.0) + R_P + alpha
+        binom_log = log(binomial(over, under), 2)
+        if binom_log == inf:
+            binom_log = M + 1
+        cost_gb4 = ceil(2 * binom_log) # Paper uses 2.3727, we are more conservative here
+
+        return ((R_F >= R_F_max) and (cost_gb4 >= M))
     else:
         print("Invalid value for alpha!")
         exit(1)
@@ -421,6 +431,7 @@ def generate_matrix_full(NUM_CELLS):
     return M
 
 def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize small entries
+    entry_max_bit_size = FIELD_SIZE
     if FIELD == 0:
         print("Matrix generation not implemented for GF(2^n).")
         exit(1)
@@ -432,11 +443,11 @@ def generate_matrix_partial(FIELD, FIELD_SIZE, NUM_CELLS): ## TODO: Prioritize s
             M = matrix(F, [[F(2), F(1), F(1)], [F(1), F(2), F(1)], [F(1), F(1), F(3)]])
         else:
             M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
-            M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
+            M_diagonal = matrix.diagonal([F(grain_random_bits(entry_max_bit_size)) for _ in range(0, NUM_CELLS)])
             M = M_circulant + M_diagonal
             # while algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False:
             while check_minpoly_condition(M, NUM_CELLS) == False:
-                M_diagonal = matrix.diagonal([F(grain_random_bits(FIELD_SIZE)) for _ in range(0, NUM_CELLS)])
+                M_diagonal = matrix.diagonal([F(grain_random_bits(entry_max_bit_size)) for _ in range(0, NUM_CELLS)])
                 M = M_circulant + M_diagonal
         
         if(algorithm_1(M, NUM_CELLS)[0] == False or algorithm_2(M, NUM_CELLS)[0] == False or algorithm_3(M, NUM_CELLS)[0] == False):
