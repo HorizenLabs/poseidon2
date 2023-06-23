@@ -82,6 +82,40 @@ impl<F: PrimeField> Poseidon2<F> {
         }
     }
 
+    fn matmul_m4(&self, input: &mut[F]) {
+        let t = self.params.t;
+        let t4 = t / 4;
+        for i in 0..t4 {
+            let start_index = i * 4;
+            let mut t_0 = input[start_index];
+            t_0.add_assign(&input[start_index + 1]);
+            let mut t_1 = input[start_index + 2];
+            t_1.add_assign(&input[start_index + 3]);
+            let mut t_2 = input[start_index + 1];
+            t_2.double_in_place();
+            t_2.add_assign(&t_1);
+            let mut t_3 = input[start_index + 3];
+            t_3.double_in_place();
+            t_3.add_assign(&t_0);
+            let mut t_4 = t_1;
+            t_4.double_in_place();
+            t_4.double_in_place();
+            t_4.add_assign(&t_3);
+            let mut t_5 = t_0;
+            t_5.double_in_place();
+            t_5.double_in_place();
+            t_5.add_assign(&t_2);
+            let mut t_6 = t_3;
+            t_6.add_assign(&t_5);
+            let mut t_7 = t_2;
+            t_7.add_assign(&t_4);
+            input[start_index] = t_6;
+            input[start_index + 1] = t_5;
+            input[start_index + 2] = t_7;
+            input[start_index + 3] = t_4;
+        }
+    }
+
     fn matmul_external(&self, input: &mut[F]) {
         let t = self.params.t;
         match t {
@@ -101,40 +135,16 @@ impl<F: PrimeField> Poseidon2<F> {
                 input[1].add_assign(&sum);
                 input[2].add_assign(&sum);
             }
-            4 | 8 | 12 | 16 | 20 | 24 => {
+            4 => {
                 // Applying cheap 4x4 MDS matrix to each 4-element part of the state
-                let t4 = t / 4;
-                for i in 0..t4 {
-                    let start_index = i * 4;
-                    let mut t_0 = input[start_index];
-                    t_0.add_assign(&input[start_index + 1]);
-                    let mut t_1 = input[start_index + 2];
-                    t_1.add_assign(&input[start_index + 3]);
-                    let mut t_2 = input[start_index + 1];
-                    t_2.double_in_place();
-                    t_2.add_assign(&t_1);
-                    let mut t_3 = input[start_index + 3];
-                    t_3.double_in_place();
-                    t_3.add_assign(&t_0);
-                    let mut t_4 = t_1;
-                    t_4.double_in_place();
-                    t_4.double_in_place();
-                    t_4.add_assign(&t_3);
-                    let mut t_5 = t_0;
-                    t_5.double_in_place();
-                    t_5.double_in_place();
-                    t_5.add_assign(&t_2);
-                    let mut t_6 = t_3;
-                    t_6.add_assign(&t_5);
-                    let mut t_7 = t_2;
-                    t_7.add_assign(&t_4);
-                    input[start_index] = t_6;
-                    input[start_index + 1] = t_5;
-                    input[start_index + 2] = t_7;
-                    input[start_index + 3] = t_4;
-                }
+                self.matmul_m4(input);
+            }
+            8 | 12 | 16 | 20 | 24 => {
+                // Applying cheap 4x4 MDS matrix to each 4-element part of the state
+                self.matmul_m4(input);
 
-                // Applying second cheap matrix
+                // Applying second cheap matrix for t > 4
+                let t4 = t / 4;
                 let mut stored = [F::zero(); 4];
                 for l in 0..4 {
                     stored[l] = input[l];
@@ -150,7 +160,6 @@ impl<F: PrimeField> Poseidon2<F> {
                 panic!()
             }
         }
-
     }
 
     fn matmul_internal(&self, input: &mut[F], mat_internal_diag_m_1: &[F]) {
@@ -272,19 +281,18 @@ mod poseidon2_tests_goldilocks {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0xed3dbcc4ff1e8d33"));
-        assert_eq!(perm[1], from_hex("0xfb85eac6ac91a150"));
-        assert_eq!(perm[2], from_hex("0xd41e1e237ed3e2ef"));
-        assert_eq!(perm[3], from_hex("0x5e289bf0a4c11897"));
-        assert_eq!(perm[4], from_hex("0x4398b20f93e3ba6b"));
-        assert_eq!(perm[5], from_hex("0x5659a48ffaf2901d"));
-        assert_eq!(perm[6], from_hex("0xe44d81e89a88f8ae"));
-        assert_eq!(perm[7], from_hex("0x08efdb285f8c3dbc"));
-        assert_eq!(perm[8], from_hex("0x294ab7503297850e"));
-        assert_eq!(perm[9], from_hex("0xa11c61f4870b9904"));
-        assert_eq!(perm[10], from_hex("0xa6855c112cc08968"));
-        assert_eq!(perm[11], from_hex("0x17c6d53d2fb3e8c1"));
-
+        assert_eq!(perm[0], from_hex("0x01eaef96bdf1c0c1"));
+        assert_eq!(perm[1], from_hex("0x1f0d2cc525b2540c"));
+        assert_eq!(perm[2], from_hex("0x6282c1dfe1e0358d"));
+        assert_eq!(perm[3], from_hex("0xe780d721f698e1e6"));
+        assert_eq!(perm[4], from_hex("0x280c0b6f753d833b"));
+        assert_eq!(perm[5], from_hex("0x1b942dd5023156ab"));
+        assert_eq!(perm[6], from_hex("0x43f0df3fcccb8398"));
+        assert_eq!(perm[7], from_hex("0xe8e8190585489025"));
+        assert_eq!(perm[8], from_hex("0x56bdbf72f77ada22"));
+        assert_eq!(perm[9], from_hex("0x7911c32bf9dcd705"));
+        assert_eq!(perm[10], from_hex("0xec467926508fbe67"));
+        assert_eq!(perm[11], from_hex("0x6a50450ddf85a6ed"));
     }
 }
 
@@ -339,31 +347,30 @@ mod poseidon2_tests_babybear {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x7264c7b4"));
-        assert_eq!(perm[1], from_hex("0x57f54b89"));
-        assert_eq!(perm[2], from_hex("0x08e94bc9"));
-        assert_eq!(perm[3], from_hex("0x4b05f544"));
-        assert_eq!(perm[4], from_hex("0x68e1ccac"));
-        assert_eq!(perm[5], from_hex("0x5aff4a53"));
-        assert_eq!(perm[6], from_hex("0x685c3665"));
-        assert_eq!(perm[7], from_hex("0x58b53bb8"));
-        assert_eq!(perm[8], from_hex("0x0bdc0a03"));
-        assert_eq!(perm[9], from_hex("0x0376e981"));
-        assert_eq!(perm[10], from_hex("0x498926e6"));
-        assert_eq!(perm[11], from_hex("0x3185cef3"));
-        assert_eq!(perm[12], from_hex("0x17778434"));
-        assert_eq!(perm[13], from_hex("0x551bbf78"));
-        assert_eq!(perm[14], from_hex("0x46e0df61"));
-        assert_eq!(perm[15], from_hex("0x04222917"));
-        assert_eq!(perm[16], from_hex("0x09b8d147"));
-        assert_eq!(perm[17], from_hex("0x6e0192ce"));
-        assert_eq!(perm[18], from_hex("0x25215927"));
-        assert_eq!(perm[19], from_hex("0x06b43026"));
-        assert_eq!(perm[20], from_hex("0x093b34f3"));
-        assert_eq!(perm[21], from_hex("0x6ed57a4c"));
-        assert_eq!(perm[22], from_hex("0x73a7c7a3"));
-        assert_eq!(perm[23], from_hex("0x511e49f5"));
-
+        assert_eq!(perm[0], from_hex("0x2ed3e23d"));
+        assert_eq!(perm[1], from_hex("0x12921fb0"));
+        assert_eq!(perm[2], from_hex("0x0e659e79"));
+        assert_eq!(perm[3], from_hex("0x61d81dc9"));
+        assert_eq!(perm[4], from_hex("0x32bae33b"));
+        assert_eq!(perm[5], from_hex("0x62486ae3"));
+        assert_eq!(perm[6], from_hex("0x1e681b60"));
+        assert_eq!(perm[7], from_hex("0x24b91325"));
+        assert_eq!(perm[8], from_hex("0x2a2ef5b9"));
+        assert_eq!(perm[9], from_hex("0x50e8593e"));
+        assert_eq!(perm[10], from_hex("0x5bc818ec"));
+        assert_eq!(perm[11], from_hex("0x10691997"));
+        assert_eq!(perm[12], from_hex("0x35a14520"));
+        assert_eq!(perm[13], from_hex("0x2ba6a3c5"));
+        assert_eq!(perm[14], from_hex("0x279d47ec"));
+        assert_eq!(perm[15], from_hex("0x55014e81"));
+        assert_eq!(perm[16], from_hex("0x5953a67f"));
+        assert_eq!(perm[17], from_hex("0x2f403111"));
+        assert_eq!(perm[18], from_hex("0x6b8828ff"));
+        assert_eq!(perm[19], from_hex("0x1801301f"));
+        assert_eq!(perm[20], from_hex("0x2749207a"));
+        assert_eq!(perm[21], from_hex("0x3dc9cf21"));
+        assert_eq!(perm[22], from_hex("0x3c985ba2"));
+        assert_eq!(perm[23], from_hex("0x57a99864"));
     }
 }
 
@@ -422,8 +429,8 @@ mod poseidon2_tests_bls12 {
             input_2.push(Scalar::from(i as u64));
         }
         let perm_2 = poseidon2_2.permutation(&input_2);
-        assert_eq!(perm_2[0], from_hex("0x50f38c87fbf14be6e91d0d911b52dc8c1b19fe439348c427514a8b59bdf92f62"));
-        assert_eq!(perm_2[1], from_hex("0x3222c2d9d80f8be5aff518685e66ae4648cc76243d1ca077101bebb2ee245d30"));
+        assert_eq!(perm_2[0], from_hex("0x73c46dd530e248a87b61d19e67fa1b4ed30fc3d09f16531fe189fb945a15ce4e"));
+        assert_eq!(perm_2[1], from_hex("0x1f0e305ee21c9366d5793b80251405032a3fee32b9dd0b5f4578262891b043b4"));
 
         let poseidon2_3 = Poseidon2::new(&POSEIDON2_BLS_3_PARAMS);
         let mut input_3: Vec<Scalar> = vec![];
@@ -431,9 +438,20 @@ mod poseidon2_tests_bls12 {
             input_3.push(Scalar::from(i as u64));
         }
         let perm_3 = poseidon2_3.permutation(&input_3);
-        assert_eq!(perm_3[0], from_hex("0x562af4b3710cdba6cea53e1f73325b21bb97ac810943b74d863d87163ee8042e"));
-        assert_eq!(perm_3[1], from_hex("0x4674eba4cef166510c0d7a9ddf08cf813637bc2081e2c40c5047dce7ecdf2b95"));
-        assert_eq!(perm_3[2], from_hex("0x0cf55ec35287dca6195eb6dd43e9ac1aba8857b4d3e4501be8bd8e9946a8dc54"));
+        assert_eq!(perm_3[0], from_hex("0x1b152349b1950b6a8ca75ee4407b6e26ca5cca5650534e56ef3fd45761fbf5f0"));
+        assert_eq!(perm_3[1], from_hex("0x4c5793c87d51bdc2c08a32108437dc0000bd0275868f09ebc5f36919af5b3891"));
+        assert_eq!(perm_3[2], from_hex("0x1fc8ed171e67902ca49863159fe5ba6325318843d13976143b8125f08b50dc6b"));
+
+        let poseidon2_4 = Poseidon2::new(&POSEIDON2_BLS_4_PARAMS);
+        let mut input_4: Vec<Scalar> = vec![];
+        for i in 0..poseidon2_4.params.t {
+            input_4.push(Scalar::from(i as u64));
+        }
+        let perm_4 = poseidon2_4.permutation(&input_4);
+        assert_eq!(perm_4[0], from_hex("0x28ff6c4edf9768c08ae26290487e93449cc8bc155fc2fad92a344adceb3ada6d"));
+        assert_eq!(perm_4[1], from_hex("0x0e56f2b6fad25075aa93560185b70e2b180ed7e269159c507c288b6747a0db2d"));
+        assert_eq!(perm_4[2], from_hex("0x6d8196f28da6006bb89b3df94600acdc03d0ba7c2b0f3f4409a54c1db6bf30d0"));
+        assert_eq!(perm_4[3], from_hex("0x07cfb49540ee456cce38b8a7d1a930a57ffc6660737f6589ef184c5e15334e36"));
     }
 }
 
@@ -479,9 +497,9 @@ mod poseidon2_tests_bn256 {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x30610a447b7dec194697fb50786aa7421494bd64c221ba4d3b1af25fb07bd103"));
-        assert_eq!(perm[1], from_hex("0x13f731d6ffbad391be22d2ac364151849e19fa38eced4e761bcd21dbdc600288"));
-        assert_eq!(perm[2], from_hex("0x1433e2c8f68382c447c5c14b8b3df7cbfd9273dd655fe52f1357c27150da786f"));
+        assert_eq!(perm[0], from_hex("0x0bb61d24daca55eebcb1929a82650f328134334da98ea4f847f760054f4a3033"));
+        assert_eq!(perm[1], from_hex("0x303b6f7c86d043bfcbcc80214f26a30277a15d3f74ca654992defe7ff8d03570"));
+        assert_eq!(perm[2], from_hex("0x1ed25194542b12eef8617361c3ba7c52e660b145994427cc86296242cf766ec8"));
 
     }
 }
@@ -539,9 +557,9 @@ mod poseidon2_tests_pallas {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x1d6a0158834521fd53c786debb6456171b462f2ee3beb243bba0fa87e2fe7024"));
-        assert_eq!(perm[1], from_hex("0x1d5caec6db09d78608971fd010944e5d81c036012031db1ae6f79b6886eff724"));
-        assert_eq!(perm[2], from_hex("0x1622fe4b0dccd5e5393a31ba40e15c3e5a93a83dbe416f5e3d44f86998ce4878"));
+        assert_eq!(perm[0], from_hex("0x1a9b54c7512a914dd778282c44b3513fea7251420b9d95750baae059b2268d7a"));
+        assert_eq!(perm[1], from_hex("0x1c48ea0994a7d7984ea338a54dbf0c8681f5af883fe988d59ba3380c9f7901fc"));
+        assert_eq!(perm[2], from_hex("0x079ddd0a80a3e9414489b526a2770448964766685f4c4842c838f8a23120b401"));
 
     }
 }
@@ -588,9 +606,9 @@ mod poseidon2_tests_vesta {
             input.push(Scalar::from(i as u64));
         }
         let perm = poseidon2.permutation(&input);
-        assert_eq!(perm[0], from_hex("0x2dbc40552a2b2a785f63489278361134609229297aafcde2bc8958d45546966f"));
-        assert_eq!(perm[1], from_hex("0x373efbf666c89d0653612fadf73ab1db47df46c38e86a959d642801a7c4b0201"));
-        assert_eq!(perm[2], from_hex("0x09cde65715aa5d7a6a5bc5feedd549489f805de1c7951e2135b8135ef1112f59"));
+        assert_eq!(perm[0], from_hex("0x261ecbdfd62c617b82d297705f18c788fc9831b14a6a2b8f61229bef68ce2792"));
+        assert_eq!(perm[1], from_hex("0x2c76327e0b7653873263158cf8545c282364b183880fcdea93ca8526d518c66f"));
+        assert_eq!(perm[2], from_hex("0x262316c0ce5244838c75873299b59d763ae0849d2dd31bdc95caf7db1c2901bf"));
 
     }
 }

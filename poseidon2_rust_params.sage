@@ -17,7 +17,7 @@ n = len(p.bits()) # bit
 t = 3 # BN254/BN256, BLS12-381, Pallas, Vesta (t = 3 for sponge, t = 2 for compression)
 
 FIELD = 1
-SBOX = 1
+SBOX = 0
 FIELD_SIZE = n
 NUM_CELLS = t
 
