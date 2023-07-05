@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub struct Poseidon2<F: PrimeField> {
-    pub(crate) params: Arc<Poseidon2Params<F>>,
+    pub params: Arc<Poseidon2Params<F>>,
 }
 
 impl<F: PrimeField> Poseidon2<F> {
@@ -49,11 +49,11 @@ impl<F: PrimeField> Poseidon2<F> {
         current_state
     }
 
-    fn sbox(&self, input: &[F]) -> Vec<F> {
+    pub fn sbox(&self, input: &[F]) -> Vec<F> {
         input.iter().map(|el| self.sbox_p(el)).collect()
     }
 
-    fn sbox_p(&self, input: &F) -> F {
+    pub fn sbox_p(&self, input: &F) -> F {
         let mut input2 = *input;
         input2.square_in_place();
 
@@ -82,7 +82,7 @@ impl<F: PrimeField> Poseidon2<F> {
         }
     }
 
-    fn matmul_m4(&self, input: &mut[F]) {
+    pub fn matmul_m4(&self, input: &mut[F]) {
         let t = self.params.t;
         let t4 = t / 4;
         for i in 0..t4 {
@@ -116,7 +116,7 @@ impl<F: PrimeField> Poseidon2<F> {
         }
     }
 
-    fn matmul_external(&self, input: &mut[F]) {
+    pub fn matmul_external(&self, input: &mut[F]) {
         let t = self.params.t;
         match t {
             2 => {
@@ -162,7 +162,7 @@ impl<F: PrimeField> Poseidon2<F> {
         }
     }
 
-    fn matmul_internal(&self, input: &mut[F], mat_internal_diag_m_1: &[F]) {
+    pub fn matmul_internal(&self, input: &mut[F], mat_internal_diag_m_1: &[F]) {
         let t = self.params.t;
 
         match t {
@@ -207,7 +207,7 @@ impl<F: PrimeField> Poseidon2<F> {
         }
     }
 
-    fn add_rc(&self, input: &[F], rc: &[F]) -> Vec<F> {
+    pub fn add_rc(&self, input: &[F], rc: &[F]) -> Vec<F> {
         input
             .iter()
             .zip(rc.iter())
