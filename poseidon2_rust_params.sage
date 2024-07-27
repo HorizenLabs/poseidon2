@@ -461,7 +461,7 @@ def generate_matrix_partial_small_entries(FIELD, FIELD_SIZE, NUM_CELLS):
         exit(1)
     elif FIELD == 1:
         M_circulant = matrix.circulant(vector([F(0)] + [F(1) for _ in range(0, NUM_CELLS - 1)]))
-        combinations = list(itertools.product(range(2, 6), repeat=NUM_CELLS))
+        combinations = itertools.combinations(range(2, 6), NUM_CELLS)
         for entry in combinations:
             M = M_circulant + matrix.diagonal(vector(F, list(entry)))
             print(M)
