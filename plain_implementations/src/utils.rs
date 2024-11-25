@@ -6,7 +6,7 @@ use ark_ff::PrimeField;
 //     F::from_repr(F::Repr::from(val)).unwrap()
 // }
 
-// guassian elimination
+// gaussian elimination
 pub fn mat_inverse<F: PrimeField>(mat: &[Vec<F>]) -> Vec<Vec<F>> {
     let n = mat.len();
     assert!(mat[0].len() == n);
